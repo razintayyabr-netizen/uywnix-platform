@@ -1,283 +1,350 @@
 'use client';
 import { useState } from 'react';
 
-export default function Home() {
-  const [openFaq, setOpenFaq] = useState(null);
+// ==================== DATA ====================
+const models = [
+  { id: 'glm-5.1', name: 'GLM-5.1', provider: 'Ollama Cloud', free: true },
+  { id: 'llama4', name: 'Llama 4', provider: 'Ollama Cloud', free: true },
+  { id: 'mistral-large', name: 'Mistral Large', provider: 'Ollama Cloud', free: true },
+  { id: 'qwen3', name: 'Qwen 3', provider: 'Ollama Cloud', free: true },
+  { id: 'deepseek-r1', name: 'DeepSeek R1', provider: 'Ollama Cloud', free: true },
+  { id: 'claude-4-sonnet', name: 'Claude 4 Sonnet', provider: 'Anthropic', free: false },
+  { id: 'gpt-4o', name: 'GPT-4o', provider: 'OpenAI', free: false },
+  { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', provider: 'Google', free: false },
+];
+
+const platforms = [
+  { id: 'telegram', name: 'Telegram', icon: '✈️', status: 'available' },
+  { id: 'whatsapp', name: 'WhatsApp', icon: '💬', status: 'available' },
+  { id: 'discord', name: 'Discord', icon: '🎮', status: 'available' },
+  { id: 'webchat', name: 'WebChat', icon: '🌐', status: 'available' },
+  { id: 'slack', name: 'Slack', icon: '💼', status: 'coming' },
+];
+
+// ==================== AUTH SCREEN ====================
+function AuthScreen({ onLogin }) {
+  const [isSignup, setIsSignup] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onLogin({ name: name || email.split('@')[0], email });
+  };
 
   return (
-    <main>
-      {/* NAV */}
-      <nav style={{ position: 'sticky', top: 0, zIndex: 50, background: 'rgba(5,5,7,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg, #7C3AED, #A855F7)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 800, fontFamily: 'JetBrains Mono, monospace' }}>U</div>
-            <span style={{ fontWeight: 700, fontSize: 20, letterSpacing: '-0.02em' }}>UYWNIX</span>
-          </div>
-          <div style={{ display: 'flex', gap: 24, alignItems: 'center' }}>
-            <a href="#products" style={{ color: '#6B6B7B', textDecoration: 'none', fontSize: 14, fontWeight: 500 }}>Products</a>
-            <a href="#about" style={{ color: '#6B6B7B', textDecoration: 'none', fontSize: 14, fontWeight: 500 }}>About</a>
-            <a href="#faq" style={{ color: '#6B6B7B', textDecoration: 'none', fontSize: 14, fontWeight: 500 }}>FAQ</a>
-            <a href="https://uywni.app" target="_blank" className="cta-btn" style={{ padding: '10px 24px', fontSize: 14 }}>Open UYWNI</a>
-          </div>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#050507' }}>
+      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 30%, rgba(124,58,237,0.2) 0%, transparent 60%)' }} />
+      <div style={{ position: 'relative', zIndex: 1, width: 400, maxWidth: '90vw' }}>
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
+          <div style={{ width: 48, height: 48, borderRadius: 14, background: 'linear-gradient(135deg, #7C3AED, #A855F7)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 800, margin: '0 auto 16px', fontFamily: 'JetBrains Mono, monospace' }}>U</div>
+          <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 4 }}>UYWNIX Claw</h1>
+          <p style={{ color: '#6B6B7B', fontSize: 14 }}>Your 24/7 AI agent platform</p>
         </div>
-      </nav>
-
-      {/* HERO - kilo.ai style */}
-      <section style={{ position: 'relative', padding: '120px 24px 60px', textAlign: 'center', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% -20%, rgba(124,58,237,0.25) 0%, transparent 70%)' }} />
-        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
-        <div style={{ position: 'relative', zIndex: 1, maxWidth: 900, margin: '0 auto' }}>
-          <div style={{ fontSize: 13, color: '#A855F7', letterSpacing: '0.15em', textTransform: 'uppercase', fontFamily: 'JetBrains Mono, monospace', marginBottom: 16 }}>
-            AI for everyone
+        <form onSubmit={handleSubmit} style={{ background: '#0A0A10', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, padding: 32 }}>
+          {isSignup && (
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ fontSize: 12, fontWeight: 600, color: '#9CA3AF', letterSpacing: '0.08em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>Full Name</label>
+              <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Husayn" required style={{ width: '100%', padding: '12px 16px', borderRadius: 10, background: '#050507', border: '1px solid rgba(255,255,255,0.06)', color: '#E8E8ED', fontSize: 14, outline: 'none', fontFamily: 'Inter, sans-serif' }} />
+            </div>
+          )}
+          <div style={{ marginBottom: 16 }}>
+            <label style={{ fontSize: 12, fontWeight: 600, color: '#9CA3AF', letterSpacing: '0.08em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>Email</label>
+            <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@email.com" required style={{ width: '100%', padding: '12px 16px', borderRadius: 10, background: '#050507', border: '1px solid rgba(255,255,255,0.06)', color: '#E8E8ED', fontSize: 14, outline: 'none', fontFamily: 'Inter, sans-serif' }} />
           </div>
-          <h1 style={{ fontSize: 68, fontWeight: 800, lineHeight: 1.05, letterSpacing: '-0.04em', marginBottom: 20 }}>
-            Social app for everyone<br />
-            <span style={{ background: 'linear-gradient(135deg, #7C3AED, #A855F7, #C084FC)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundSize: '200% 200%', animation: 'gradient-shift 4s ease infinite' }}>AI automation for business</span>
-          </h1>
-          <p style={{ fontSize: 20, color: '#6B6B7B', lineHeight: 1.6, maxWidth: 560, margin: '0 auto 24px' }}>
-            From social connections to AI-powered workflows — we build tools that work for everyone.
+          <div style={{ marginBottom: 24 }}>
+            <label style={{ fontSize: 12, fontWeight: 600, color: '#9CA3AF', letterSpacing: '0.08em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>Password</label>
+            <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required style={{ width: '100%', padding: '12px 16px', borderRadius: 10, background: '#050507', border: '1px solid rgba(255,255,255,0.06)', color: '#E8E8ED', fontSize: 14, outline: 'none', fontFamily: 'Inter, sans-serif' }} />
+          </div>
+          <button type="submit" style={{ width: '100%', padding: '14px', background: 'linear-gradient(135deg, #7C3AED, #A855F7)', color: 'white', border: 'none', borderRadius: 12, fontSize: 16, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>
+            {isSignup ? 'Create Account' : 'Sign In'}
+          </button>
+          <p style={{ textAlign: 'center', fontSize: 13, color: '#6B6B7B', marginTop: 16 }}>
+            {isSignup ? 'Already have an account?' : "Don't have an account?"}{' '}
+            <span onClick={() => setIsSignup(!isSignup)} style={{ color: '#A855F7', cursor: 'pointer', fontWeight: 500 }}>
+              {isSignup ? 'Sign In' : 'Sign Up'}
+            </span>
           </p>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 16px', borderRadius: 999, background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', fontSize: 13, color: '#22C55E', fontFamily: 'JetBrains Mono, monospace' }}>
-            Powered by OpenClaw
-          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ==================== DASHBOARD ====================
+function Dashboard({ user, onLogout }) {
+  const [agents, setAgents] = useState([]);
+  const [showCreate, setShowCreate] = useState(false);
+  const [selectedModel, setSelectedModel] = useState('glm-5.1');
+  const [selectedPlatforms, setSelectedPlatforms] = useState([]);
+  const [agentName, setAgentName] = useState('');
+  const [deploying, setDeploying] = useState(false);
+  const [view, setView] = useState('dashboard'); // dashboard, create, agent
+
+  const handleDeploy = () => {
+    if (!agentName) return;
+    setDeploying(true);
+    setTimeout(() => {
+      const newAgent = {
+        id: Date.now(),
+        name: agentName,
+        model: selectedModel,
+        platforms: [...selectedPlatforms],
+        status: 'running',
+        created: new Date().toLocaleDateString(),
+        messages: 0,
+      };
+      setAgents(prev => [...prev, newAgent]);
+      setDeploying(false);
+      setShowCreate(false);
+      setAgentName('');
+      setSelectedPlatforms([]);
+      setView('dashboard');
+    }, 2500);
+  };
+
+  const toggleAgent = (id) => {
+    setAgents(prev => prev.map(a => a.id === id ? { ...a, status: a.status === 'running' ? 'stopped' : 'running' } : a));
+  };
+
+  const deleteAgent = (id) => {
+    setAgents(prev => prev.filter(a => a.id !== id));
+  };
+
+  return (
+    <div style={{ minHeight: '100vh', background: '#050507' }}>
+      {/* Sidebar */}
+      <div style={{ position: 'fixed', left: 0, top: 0, bottom: 0, width: 220, background: '#0A0A10', borderRight: '1px solid rgba(255,255,255,0.06)', padding: '20px 16px', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 32 }}>
+          <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg, #7C3AED, #A855F7)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 800, fontFamily: 'JetBrains Mono, monospace' }}>U</div>
+          <span style={{ fontWeight: 700, fontSize: 16 }}>UYWNIX Claw</span>
         </div>
-      </section>
-
-      {/* TWO PRODUCT CARDS - kilo.ai KiloClaw + Kilo Code style */}
-      <section id="products" style={{ padding: '60px 24px 80px' }}>
-        <div style={{ maxWidth: 1000, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-          
-          {/* UYWNI Card */}
-          <div style={{ background: 'var(--surface, #0A0A10)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 24, padding: 48, position: 'relative', overflow: 'hidden', transition: 'all 0.3s' }}>
-            <div style={{ position: 'absolute', top: -60, right: -60, width: 200, height: 200, borderRadius: '50%', background: 'radial-gradient(circle, rgba(34,197,94,0.15) 0%, transparent 70%)' }} />
-            <div style={{ position: 'relative', zIndex: 1 }}>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 14px', borderRadius: 999, background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', fontSize: 13, color: '#22C55E', marginBottom: 24, fontWeight: 600 }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22C55E' }} /> Social App
-              </div>
-              <h2 style={{ fontSize: 36, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 16 }}>UYWNI</h2>
-              <p style={{ fontSize: 16, color: '#6B6B7B', lineHeight: 1.6, marginBottom: 28 }}>
-                A social media platform for everyone. Connect, share, and build your community.
-              </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 32 }}>
-                {[
-                  'Connect with people and communities',
-                  'Share posts, stories, and moments',
-                  'Real-time messaging and calls',
-                  'Privacy-first design',
-                ].map((f, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 15 }}>
-                    <span style={{ color: '#22C55E', fontSize: 18 }}>✓</span> {f}
-                  </div>
-                ))}
-              </div>
-              <a href="https://uywni.app" target="_blank" className="cta-btn" style={{ background: 'linear-gradient(135deg, #16A34A, #22C55E)' }}>
-                Open UYWNI →
-              </a>
-            </div>
-          </div>
-
-          {/* UYWNIX Card */}
-          <div style={{ background: 'var(--surface, #0A0A10)', border: '1px solid rgba(124,58,237,0.3)', borderRadius: 24, padding: 48, position: 'relative', overflow: 'hidden', boxShadow: '0 0 60px rgba(124,58,237,0.08)', transition: 'all 0.3s' }}>
-            <div style={{ position: 'absolute', top: -60, right: -60, width: 200, height: 200, borderRadius: '50%', background: 'radial-gradient(circle, rgba(124,58,237,0.15) 0%, transparent 70%)' }} />
-            <div style={{ position: 'relative', zIndex: 1 }}>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 14px', borderRadius: 999, background: 'rgba(124,58,237,0.1)', border: '1px solid rgba(124,58,237,0.2)', fontSize: 13, color: '#A855F7', marginBottom: 24, fontWeight: 600 }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#A855F7', animation: 'pulse-glow 2s infinite' }} /> AI Automation
-              </div>
-              <h2 style={{ fontSize: 36, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 16 }}>UYWNIX</h2>
-              <p style={{ fontSize: 16, color: '#6B6B7B', lineHeight: 1.6, marginBottom: 28 }}>
-                AI chatbots, voice agents, and automation workflows — deployed for your business in days.
-              </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 32 }}>
-                {[
-                  'AI chatbots on WhatsApp & Telegram',
-                  'Voice agents that answer calls 24/7',
-                  'Automation workflows & CRM sync',
-                  '500+ AI models, free options available',
-                ].map((f, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 15 }}>
-                    <span style={{ color: '#A855F7', fontSize: 18 }}>✓</span> {f}
-                  </div>
-                ))}
-              </div>
-              <a href="#contact" className="cta-btn">
-                Get Started →
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* STATS */}
-      <section style={{ padding: '60px 24px', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
-        <div style={{ maxWidth: 800, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 24 }}>
+        <nav style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1 }}>
           {[
-            { value: '500+', label: 'AI Models' },
-            { value: '24/7', label: 'Always On' },
-            { value: '50+', label: 'Platforms' },
-            { value: '<60s', label: 'Deploy' },
-          ].map((s, i) => (
-            <div key={i} style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 36, fontWeight: 800, fontFamily: 'JetBrains Mono, monospace', background: 'linear-gradient(135deg, #7C3AED, #A855F7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{s.value}</div>
-              <div style={{ fontSize: 12, color: '#6B6B7B', marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.12em' }}>{s.label}</div>
-            </div>
+            { id: 'dashboard', label: 'Dashboard', icon: '📊' },
+            { id: 'create', label: 'New Agent', icon: '⚡' },
+            { id: 'models', label: 'Models', icon: '🧠' },
+            { id: 'settings', label: 'Settings', icon: '⚙️' },
+          ].map(item => (
+            <button key={item.id} onClick={() => item.id === 'create' ? (setShowCreate(true), setView('create')) : setView(item.id)} style={{
+              display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10,
+              background: view === item.id ? 'rgba(124,58,237,0.1)' : 'transparent',
+              border: 'none', color: view === item.id ? '#A855F7' : '#6B6B7B', fontSize: 14, fontWeight: 500,
+              cursor: 'pointer', textAlign: 'left', fontFamily: 'Inter, sans-serif', transition: 'all 0.2s',
+            }}>
+              <span>{item.icon}</span> {item.label}
+            </button>
           ))}
+        </nav>
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 16, display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg, #7C3AED, #A855F7)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 600 }}>{user.name[0].toUpperCase()}</div>
+          <div style={{ flex: 1, overflow: 'hidden' }}>
+            <div style={{ fontSize: 13, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.name}</div>
+            <div style={{ fontSize: 11, color: '#6B6B7B', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.email}</div>
+          </div>
+          <button onClick={onLogout} style={{ background: 'none', border: 'none', color: '#6B6B7B', cursor: 'pointer', fontSize: 16 }}>→</button>
         </div>
-      </section>
+      </div>
 
-      {/* ABOUT */}
-      <section id="about" style={{ padding: '80px 24px', background: 'var(--surface, #0A0A10)', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
-        <div style={{ maxWidth: 800, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 48 }}>
-            <div style={{ fontSize: 12, color: '#A855F7', letterSpacing: '0.2em', textTransform: 'uppercase', fontFamily: 'JetBrains Mono, monospace', marginBottom: 8 }}>// About</div>
-            <h2 style={{ fontSize: 40, fontWeight: 700, letterSpacing: '-0.03em' }}>What is UYWNIX?</h2>
-          </div>
-          <div style={{ fontSize: 18, color: '#9CA3AF', lineHeight: 1.8, textAlign: 'center' }}>
-            UYWNIX is an AI company building tools for everyone. Our social app <strong style={{ color: '#22C55E' }}>UYWNI</strong> connects people. Our automation platform <strong style={{ color: '#A855F7' }}>UYWNIX</strong> connects businesses with AI. Powered by OpenClaw and 500+ AI models — from free to enterprise grade.
-          </div>
-        </div>
-      </section>
-
-      {/* UYWNIX SERVICES */}
-      <section style={{ padding: '80px 24px', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 48 }}>
-            <div style={{ fontSize: 12, color: '#A855F7', letterSpacing: '0.2em', textTransform: 'uppercase', fontFamily: 'JetBrains Mono, monospace', marginBottom: 8 }}>// UYWNIX Services</div>
-            <h2 style={{ fontSize: 40, fontWeight: 700, letterSpacing: '-0.03em' }}>AI That Works For You</h2>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
-            {[
-              { icon: '🤖', title: 'AI Chatbots', desc: 'WhatsApp, Telegram, web — trained on your business, live 24/7.', color: '#7C3AED' },
-              { icon: '📞', title: 'Voice Agents', desc: 'AI answers your calls, qualifies leads, books appointments.', color: '#22C55E' },
-              { icon: '⚡', title: 'Automation', desc: 'Email, follow-ups, CRM sync, social posting — all automated.', color: '#3B82F6' },
-              { icon: '🌐', title: 'AI Websites', desc: 'Modern sites with built-in chat, smart forms, auto-responders.', color: '#F59E0B' },
-              { icon: '📊', title: 'Analytics', desc: 'Track conversations, leads, conversions — know your ROI.', color: '#EF4444' },
-              { icon: '🔒', title: 'Enterprise Security', desc: 'Encrypted, firewalled, private. Your data stays yours.', color: '#06B6D4' },
-            ].map((s, i) => (
-              <div key={i} className="feature-card" style={{ padding: 32 }}>
-                <div style={{ width: 44, height: 44, borderRadius: 12, background: `${s.color}15`, border: `1px solid ${s.color}33`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, marginBottom: 16 }}>{s.icon}</div>
-                <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>{s.title}</h3>
-                <p style={{ fontSize: 14, color: '#6B6B7B', lineHeight: 1.5 }}>{s.desc}</p>
+      {/* Main Content */}
+      <div style={{ marginLeft: 220, padding: '24px 32px' }}>
+        {/* DASHBOARD VIEW */}
+        {view === 'dashboard' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+              <div>
+                <h1 style={{ fontSize: 28, fontWeight: 700 }}>Dashboard</h1>
+                <p style={{ color: '#6B6B7B', fontSize: 14, marginTop: 4 }}>Welcome back, {user.name}</p>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
+              <button onClick={() => { setShowCreate(true); setView('create'); }} className="cta-btn" style={{ padding: '10px 20px', fontSize: 14 }}>+ New Agent</button>
+            </div>
 
-      {/* PRICING */}
-      <section id="pricing" style={{ padding: '80px 24px', background: 'var(--surface, #0A0A10)', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
-        <div style={{ maxWidth: 900, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 48 }}>
-            <div style={{ fontSize: 12, color: '#A855F7', letterSpacing: '0.2em', textTransform: 'uppercase', fontFamily: 'JetBrains Mono, monospace', marginBottom: 8 }}>// Pricing</div>
-            <h2 style={{ fontSize: 40, fontWeight: 700, letterSpacing: '-0.03em' }}>Simple. No Surprises.</h2>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
-            {[
-              {
-                name: 'Starter', price: '$299', period: 'one-time', desc: 'AI chatbot on 1 platform',
-                features: ['1 AI chatbot', '1 platform', 'Basic training', '1 month support'],
-                featured: false,
-              },
-              {
-                name: 'Business', price: '$999', period: 'one-time', desc: 'Chatbot + voice + automation',
-                features: ['Chatbot + voice agent', '3 platforms', 'CRM integration', '3 months support', 'Analytics dashboard', 'Priority deploy'],
-                featured: true,
-              },
-              {
-                name: 'Enterprise', price: 'Custom', period: '', desc: 'Full AI suite',
-                features: ['Unlimited agents', 'All platforms', 'Custom training', 'Full integration', 'Dedicated support', 'SLA guarantee'],
-                featured: false,
-              },
-            ].map((p, i) => (
-              <div key={i} className={`pricing-card ${p.featured ? 'featured' : ''}`} style={{ position: 'relative' }}>
-                {p.featured && <div style={{ position: 'absolute', top: -12, left: '50%', transform: 'translateX(-50%)', padding: '4px 16px', borderRadius: 999, background: 'linear-gradient(135deg, #7C3AED, #A855F7)', fontSize: 12, fontWeight: 600, color: 'white' }}>POPULAR</div>}
-                <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>{p.name}</h3>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 4 }}>
-                  <span style={{ fontSize: 40, fontWeight: 800, fontFamily: 'JetBrains Mono, monospace' }}>{p.price}</span>
-                  {p.period && <span style={{ fontSize: 14, color: '#6B6B7B' }}>{p.period}</span>}
+            {/* Stats Row */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 32 }}>
+              {[
+                { label: 'Active Agents', value: agents.filter(a => a.status === 'running').length, icon: '⚡', color: '#22C55E' },
+                { label: 'Total Agents', value: agents.length, icon: '🤖', color: '#7C3AED' },
+                { label: 'Messages', value: agents.reduce((sum, a) => sum + a.messages, 0), icon: '💬', color: '#3B82F6' },
+                { label: 'Platforms', value: new Set(agents.flatMap(a => a.platforms)).size, icon: '🌐', color: '#F59E0B' },
+              ].map((s, i) => (
+                <div key={i} style={{ background: '#0A0A10', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: 20 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: 12, color: '#6B6B7B', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{s.label}</span>
+                    <span style={{ fontSize: 18 }}>{s.icon}</span>
+                  </div>
+                  <div style={{ fontSize: 28, fontWeight: 700, color: s.color, fontFamily: 'JetBrains Mono, monospace', marginTop: 8 }}>{s.value}</div>
                 </div>
-                <p style={{ fontSize: 14, color: '#6B6B7B', marginBottom: 20 }}>{p.desc}</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
-                  {p.features.map((f, j) => (
-                    <div key={j} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14 }}>
-                      <span style={{ color: '#22C55E' }}>✓</span> {f}
+              ))}
+            </div>
+
+            {/* Agent List */}
+            {agents.length === 0 ? (
+              <div style={{ background: '#0A0A10', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, padding: 60, textAlign: 'center' }}>
+                <div style={{ fontSize: 48, marginBottom: 16 }}>🦞</div>
+                <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 8 }}>No agents yet</h3>
+                <p style={{ color: '#6B6B7B', fontSize: 14, marginBottom: 24 }}>Deploy your first AI agent in 60 seconds</p>
+                <button onClick={() => { setShowCreate(true); setView('create'); }} className="cta-btn" style={{ padding: '12px 28px', fontSize: 14 }}>⚡ Create Your First Agent</button>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {agents.map(agent => (
+                  <div key={agent.id} style={{ background: '#0A0A10', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                      <div style={{ width: 10, height: 10, borderRadius: '50%', background: agent.status === 'running' ? '#22C55E' : '#6B6B7B', boxShadow: agent.status === 'running' ? '0 0 10px rgba(34,197,94,0.5)' : 'none' }} />
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: 15 }}>{agent.name}</div>
+                        <div style={{ fontSize: 12, color: '#6B6B7B', marginTop: 2 }}>{models.find(m => m.id === agent.model)?.name} · {agent.platforms.map(p => platforms.find(pl => pl.id === p)?.name).join(', ') || 'No platform'}</div>
+                      </div>
                     </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <span style={{ fontSize: 12, padding: '4px 10px', borderRadius: 999, background: agent.status === 'running' ? 'rgba(34,197,94,0.1)' : 'rgba(107,107,123,0.1)', color: agent.status === 'running' ? '#22C55E' : '#6B6B7B', fontWeight: 600, letterSpacing: '0.05em' }}>{agent.status.toUpperCase()}</span>
+                      <button onClick={() => toggleAgent(agent.id)} style={{ padding: '8px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', color: '#E8E8ED', cursor: 'pointer', fontSize: 12, fontFamily: 'Inter, sans-serif' }}>
+                        {agent.status === 'running' ? 'Stop' : 'Start'}
+                      </button>
+                      <button onClick={() => deleteAgent(agent.id)} style={{ padding: '8px 14px', borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#EF4444', cursor: 'pointer', fontSize: 12, fontFamily: 'Inter, sans-serif' }}>
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* CREATE AGENT VIEW */}
+        {view === 'create' && (
+          <div style={{ maxWidth: 640 }}>
+            <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8 }}>Create New Agent</h1>
+            <p style={{ color: '#6B6B7B', fontSize: 14, marginBottom: 32 }}>Deploy your AI agent in 60 seconds</p>
+
+            <div style={{ background: '#0A0A10', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, padding: 32 }}>
+              {/* Agent Name */}
+              <div style={{ marginBottom: 24 }}>
+                <label style={{ fontSize: 12, fontWeight: 600, color: '#9CA3AF', letterSpacing: '0.08em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>Agent Name</label>
+                <input type="text" value={agentName} onChange={e => setAgentName(e.target.value)} placeholder="My AI Assistant" style={{ width: '100%', padding: '12px 16px', borderRadius: 10, background: '#050507', border: '1px solid rgba(255,255,255,0.06)', color: '#E8E8ED', fontSize: 14, outline: 'none', fontFamily: 'Inter, sans-serif' }} />
+              </div>
+
+              {/* Model Selection */}
+              <div style={{ marginBottom: 24 }}>
+                <label style={{ fontSize: 12, fontWeight: 600, color: '#9CA3AF', letterSpacing: '0.08em', textTransform: 'uppercase', display: 'block', marginBottom: 12 }}>Choose Model</label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+                  {models.map(m => (
+                    <button key={m.id} onClick={() => setSelectedModel(m.id)} style={{
+                      padding: '12px 14px', borderRadius: 10,
+                      border: selectedModel === m.id ? '1px solid #7C3AED' : '1px solid rgba(255,255,255,0.06)',
+                      background: selectedModel === m.id ? 'rgba(124,58,237,0.08)' : 'transparent',
+                      cursor: 'pointer', transition: 'all 0.2s', textAlign: 'left', color: 'white', fontFamily: 'Inter, sans-serif',
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: 14, fontWeight: 600 }}>{m.name}</span>
+                        {m.free && <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4, background: 'rgba(34,197,94,0.1)', color: '#22C55E', fontWeight: 700 }}>FREE</span>}
+                      </div>
+                      <div style={{ fontSize: 11, color: '#6B6B7B', marginTop: 2 }}>{m.provider}</div>
+                    </button>
                   ))}
                 </div>
-                <a href="#contact" className={p.featured ? 'cta-btn' : 'cta-btn-outline'} style={{ width: '100%', justifyContent: 'center', padding: '12px 24px' }}>
-                  {p.price === 'Custom' ? 'Contact Us' : 'Get Started'}
-                </a>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      {/* FAQ */}
-      <section id="faq" style={{ padding: '80px 24px', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
-        <div style={{ maxWidth: 700, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 48 }}>
-            <div style={{ fontSize: 12, color: '#A855F7', letterSpacing: '0.2em', textTransform: 'uppercase', fontFamily: 'JetBrains Mono, monospace', marginBottom: 8 }}>// FAQ</div>
-            <h2 style={{ fontSize: 40, fontWeight: 700, letterSpacing: '-0.03em' }}>Questions?</h2>
-          </div>
-          {[
-            { q: 'What is UYWNI?', a: 'UYWNI is our social media app — connect with people, share posts and stories, message and call in real-time. Privacy-first design.' },
-            { q: 'What is UYWNIX?', a: 'UYWNIX is our AI automation service. We build chatbots, voice agents, and automation workflows for businesses. Deployed in days, running 24/7.' },
-            { q: 'How fast can you deploy?', a: 'Chatbots go live in 2-3 days. Voice agents in 5-7 days. Enterprise projects scoped individually.' },
-            { q: 'What AI models do you use?', a: '500+ models — GLM-5.1, Claude, GPT-4o, Gemini, Llama, Mistral, Qwen, DeepSeek. Free models available.' },
-            { q: 'Do I need technical knowledge?', a: 'Zero. We handle everything — setup, training, deployment, hosting.' },
-            { q: 'Is my data safe?', a: 'Yes. Encrypted storage, token auth, VCN firewalls. Your data stays on your instance.' },
-          ].map((f, i) => (
-            <div key={i} className="faq-item" onClick={() => setOpenFaq(openFaq === i ? null : i)} style={{ cursor: 'pointer' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h4 style={{ fontSize: 16, fontWeight: 500 }}>{f.q}</h4>
-                <span style={{ color: '#A855F7', fontSize: 20, transition: 'transform 0.2s', transform: openFaq === i ? 'rotate(45deg)' : 'none' }}>+</span>
+              {/* Platform Selection */}
+              <div style={{ marginBottom: 28 }}>
+                <label style={{ fontSize: 12, fontWeight: 600, color: '#9CA3AF', letterSpacing: '0.08em', textTransform: 'uppercase', display: 'block', marginBottom: 12 }}>Connect Platforms</label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
+                  {platforms.map(p => (
+                    <button key={p.id} onClick={() => {
+                      if (p.status === 'available') setSelectedPlatforms(prev => prev.includes(p.id) ? prev.filter(x => x !== p.id) : [...prev, p.id]);
+                    }} style={{
+                      padding: '14px 8px', borderRadius: 10,
+                      border: selectedPlatforms.includes(p.id) ? '1px solid #7C3AED' : '1px solid rgba(255,255,255,0.06)',
+                      background: selectedPlatforms.includes(p.id) ? 'rgba(124,58,237,0.08)' : 'transparent',
+                      cursor: p.status === 'available' ? 'pointer' : 'not-allowed',
+                      opacity: p.status === 'coming' ? 0.4 : 1,
+                      textAlign: 'center', color: 'white', fontFamily: 'Inter, sans-serif', transition: 'all 0.2s',
+                    }}>
+                      <div style={{ fontSize: 22 }}>{p.icon}</div>
+                      <div style={{ fontSize: 11, fontWeight: 500, marginTop: 4 }}>{p.name}</div>
+                      {selectedPlatforms.includes(p.id) && <div style={{ fontSize: 9, color: '#22C55E', marginTop: 2 }}>Connected</div>}
+                      {p.status === 'coming' && <div style={{ fontSize: 9, color: '#6B6B7B', marginTop: 2 }}>Soon</div>}
+                    </button>
+                  ))}
+                </div>
               </div>
-              {openFaq === i && <p style={{ fontSize: 14, color: '#6B6B7B', lineHeight: 1.6, marginTop: 12 }}>{f.a}</p>}
-            </div>
-          ))}
-        </div>
-      </section>
 
-      {/* CONTACT */}
-      <section id="contact" style={{ padding: '100px 24px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 50%, rgba(124,58,237,0.12) 0%, transparent 70%)' }} />
-        <div style={{ position: 'relative', zIndex: 1, maxWidth: 560, margin: '0 auto' }}>
-          <h2 style={{ fontSize: 48, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 16 }}>Get Started</h2>
-          <p style={{ fontSize: 18, color: '#6B6B7B', marginBottom: 32 }}>Tell us what you need. We build it.</p>
-          <div style={{ background: 'var(--surface, #0A0A10)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 20, padding: 32, textAlign: 'left' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
-              <input type="text" placeholder="Your name" style={{ width: '100%', padding: '12px 16px', borderRadius: 10, background: '#050507', border: '1px solid rgba(255,255,255,0.06)', color: '#E8E8ED', fontSize: 14, outline: 'none', fontFamily: 'Inter, sans-serif' }} />
-              <input type="text" placeholder="+91 XXXXX XXXXX" style={{ width: '100%', padding: '12px 16px', borderRadius: 10, background: '#050507', border: '1px solid rgba(255,255,255,0.06)', color: '#E8E8ED', fontSize: 14, outline: 'none', fontFamily: 'Inter, sans-serif' }} />
+              {/* Deploy */}
+              <button onClick={handleDeploy} disabled={!agentName || deploying} style={{
+                width: '100%', padding: '16px', background: (!agentName || deploying) ? '#1A1A24' : 'linear-gradient(135deg, #7C3AED, #A855F7)',
+                color: 'white', border: 'none', borderRadius: 12, fontSize: 16, fontWeight: 600,
+                cursor: (!agentName || deploying) ? 'not-allowed' : 'pointer', fontFamily: 'Inter, sans-serif', transition: 'all 0.3s',
+              }}>
+                {deploying ? (
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center' }}>
+                    <span style={{ width: 16, height: 16, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', borderRadius: '50%', animation: 'spin 0.8s linear infinite', display: 'inline-block' }} />
+                    Provisioning...
+                  </span>
+                ) : (
+                  '⚡ Deploy Agent'
+                )}
+              </button>
             </div>
-            <select style={{ width: '100%', padding: '12px 16px', borderRadius: 10, background: '#050507', border: '1px solid rgba(255,255,255,0.06)', color: '#E8E8ED', fontSize: 14, outline: 'none', marginBottom: 14, fontFamily: 'Inter, sans-serif' }}>
-              <option>I need an AI chatbot</option>
-              <option>I need a voice agent</option>
-              <option>I need automation</option>
-              <option>I need a website</option>
-              <option>Other</option>
-            </select>
-            <textarea rows={3} placeholder="Tell us about your business..." style={{ width: '100%', padding: '12px 16px', borderRadius: 10, background: '#050507', border: '1px solid rgba(255,255,255,0.06)', color: '#E8E8ED', fontSize: 14, outline: 'none', resize: 'vertical', marginBottom: 16, fontFamily: 'Inter, sans-serif' }} />
-            <button className="cta-btn" style={{ width: '100%', justifyContent: 'center', fontSize: 16, padding: '14px 32px' }}>Send Inquiry →</button>
-            <p style={{ textAlign: 'center', fontSize: 12, color: '#6B6B7B', marginTop: 12 }}>Or email contact@uywnix.com</p>
           </div>
-        </div>
-      </section>
+        )}
 
-      {/* FOOTER */}
-      <footer style={{ borderTop: '1px solid rgba(255,255,255,0.04)', padding: '40px 24px' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ width: 28, height: 28, borderRadius: 8, background: 'linear-gradient(135deg, #7C3AED, #A855F7)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 800, fontFamily: 'JetBrains Mono, monospace' }}>U</div>
-            <span style={{ fontWeight: 600, fontSize: 16 }}>UYWNIX</span>
+        {/* MODELS VIEW */}
+        {view === 'models' && (
+          <div>
+            <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8 }}>AI Models</h1>
+            <p style={{ color: '#6B6B7B', fontSize: 14, marginBottom: 32 }}>500+ models available. Free models need no API key.</p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+              {models.map(m => (
+                <div key={m.id} style={{ background: '#0A0A10', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: 20 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                    <span style={{ fontWeight: 600, fontSize: 16 }}>{m.name}</span>
+                    {m.free ? (
+                      <span style={{ fontSize: 11, padding: '3px 8px', borderRadius: 999, background: 'rgba(34,197,94,0.1)', color: '#22C55E', fontWeight: 700 }}>FREE</span>
+                    ) : (
+                      <span style={{ fontSize: 11, padding: '3px 8px', borderRadius: 999, background: 'rgba(249,115,22,0.1)', color: '#F97316', fontWeight: 600 }}>BYOK</span>
+                    )}
+                  </div>
+                  <div style={{ fontSize: 13, color: '#6B6B7B' }}>Provider: {m.provider}</div>
+                  <div style={{ fontSize: 12, color: m.free ? '#22C55E' : '#F97316', marginTop: 8 }}>{m.free ? 'No API key needed' : 'Bring your own API key'}</div>
+                </div>
+              ))}
+            </div>
           </div>
-          <div style={{ display: 'flex', gap: 24, fontSize: 13, color: '#6B6B7B' }}>
-            <a href="https://uywni.app" target="_blank" style={{ color: '#6B6B7B', textDecoration: 'none' }}>UYWNI</a>
-            <a href="#products" style={{ color: '#6B6B7B', textDecoration: 'none' }}>Products</a>
-            <a href="#pricing" style={{ color: '#6B6B7B', textDecoration: 'none' }}>Pricing</a>
-            <a href="mailto:contact@uywnix.com" style={{ color: '#6B6B7B', textDecoration: 'none' }}>Contact</a>
+        )}
+
+        {/* SETTINGS VIEW */}
+        {view === 'settings' && (
+          <div style={{ maxWidth: 560 }}>
+            <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8 }}>Settings</h1>
+            <p style={{ color: '#6B6B7B', fontSize: 14, marginBottom: 32 }}>Account & API configuration</p>
+            <div style={{ background: '#0A0A10', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, padding: 28 }}>
+              <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>API Keys</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {['Anthropic (Claude)', 'OpenAI (GPT)', 'Google (Gemini)'].map(key => (
+                  <div key={key} style={{ display: 'flex', gap: 10 }}>
+                    <input type="password" placeholder={`Enter ${key} API key`} style={{ flex: 1, padding: '10px 14px', borderRadius: 8, background: '#050507', border: '1px solid rgba(255,255,255,0.06)', color: '#E8E8ED', fontSize: 13, outline: 'none', fontFamily: 'Inter, sans-serif' }} />
+                    <button style={{ padding: '10px 16px', borderRadius: 8, background: 'rgba(124,58,237,0.1)', border: '1px solid rgba(124,58,237,0.2)', color: '#A855F7', cursor: 'pointer', fontSize: 12, fontWeight: 600, fontFamily: 'Inter, sans-serif' }}>Save</button>
+                  </div>
+                ))}
+              </div>
+              <p style={{ fontSize: 12, color: '#6B6B7B', marginTop: 12 }}>Free models (Ollama Cloud) work without any API key.</p>
+            </div>
           </div>
-        </div>
-      </footer>
-    </main>
+        )}
+      </div>
+    </div>
   );
+}
+
+// ==================== MAIN APP ====================
+export default function Home() {
+  const [user, setUser] = useState(null);
+
+  if (!user) {
+    return <AuthScreen onLogin={setUser} />;
+  }
+
+  return <Dashboard user={user} onLogout={() => setUser(null)} />;
 }
