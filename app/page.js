@@ -88,7 +88,7 @@ function LandingPage({ onGetStarted }) {
       <nav className="nav">
         <div className="nav-inner">
           <a href="#" className="nav-logo">
-            <div className="nav-logo-icon">🦞</div>
+            <img src="/uywnix-logo.jpg" alt="UYWNIX" style={{ height: 36, borderRadius: 8 }} />
             <span className="nav-logo-text">UYWNIX</span>
           </a>
           <div className="nav-links">
@@ -327,7 +327,7 @@ function LandingPage({ onGetStarted }) {
           <div className="footer-grid">
             <div className="footer-brand">
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-                <div className="nav-logo-icon">🦞</div>
+                <img src="/uywnix-logo.jpg" alt="UYWNIX" style={{ height: 32, borderRadius: 8 }} />
                 <span style={{ fontWeight: 800, fontSize: 20 }}>UYWNIX</span>
               </div>
               <p>AI and software company building products for everyone. India-based, serving globally.</p>
@@ -391,7 +391,7 @@ function AuthScreen({ onAuth }) {
       <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 30%, rgba(124,58,237,0.15) 0%, transparent 60%)' }} />
       <div style={{ position: 'relative', zIndex: 1, width: 400, maxWidth: '90vw' }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div style={{ width: 56, height: 56, borderRadius: 16, background: 'linear-gradient(135deg, #7C3AED, #A855F7)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, margin: '0 auto 16px', boxShadow: '0 0 40px rgba(124,58,237,0.3)' }}>🦞</div>
+          <img src="/uywnix-logo.jpg" alt="UYWNIX" style={{ width: 56, height: 56, borderRadius: 16, margin: '0 auto 16px', display: 'block', boxShadow: '0 0 40px rgba(124,58,237,0.3)' }} />
           <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.02em' }}>UYWNIX Claw</h1>
           <p style={{ color: '#6B6B7B', fontSize: 14, marginTop: 4 }}>Your personal 24/7 AI agent</p>
         </div>
@@ -483,7 +483,7 @@ function Dashboard({ user, token, onLogout }) {
     <div style={{ minHeight: '100vh', background: '#050507', display: 'flex' }}>
       <div style={{ width: 240, background: '#0A0A10', borderRight: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', position: 'fixed', top: 0, bottom: 0, left: 0 }}>
         <div style={{ padding: '20px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg, #7C3AED, #A855F7)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>🦞</div>
+          <img src="/uywnix-logo.jpg" alt="UYWNIX" style={{ height: 32, borderRadius: 8 }} />
           <div><div style={{ fontWeight: 800, fontSize: 15 }}>UYWNIX</div><div style={{ fontSize: 9, color: '#6B6B7B', letterSpacing: '0.12em', textTransform: 'uppercase' }}>Claw</div></div>
         </div>
         <nav style={{ padding: '8px 12px', flex: 1 }}>
@@ -516,7 +516,7 @@ function Dashboard({ user, token, onLogout }) {
           </div>
           {agents.length === 0 ? (
             <div style={{ background: '#0A0A10', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 20, padding: 80, textAlign: 'center' }}>
-              <div style={{ fontSize: 56, marginBottom: 20 }}>🦞</div>
+              <img src="/uywnix-logo.jpg" alt="UYWNIX" style={{ width: 56, height: 56, borderRadius: 16, marginBottom: 20 }} />
               <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 8 }}>No agents yet</h2>
               <p style={{ color: '#6B6B7B', fontSize: 15, marginBottom: 28 }}>Deploy your first AI agent. It takes 60 seconds.</p>
               <button onClick={() => setView('create')} className="btn-primary" style={{ padding: '14px 32px', fontSize: 16 }}>⚡ Create First Agent</button>
