@@ -55,12 +55,24 @@ function LandingPage({ onGetStarted }) {
         <div className="hero-orb hero-orb-2" />
         <div className="hero-orb hero-orb-3" />
 
-        {/* Spinning ring decoration */}
-        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 500, height: 500, borderRadius: '50%', border: '1px solid rgba(124,58,237,0.08)', animation: 'spin-slow 60s linear infinite', pointerEvents: 'none' }}>
-          <div style={{ position: 'absolute', top: 0, left: '50%', width: 8, height: 8, borderRadius: '50%', background: '#A855F7', boxShadow: '0 0 20px #A855F7', transform: 'translateX(-50%)' }} />
-        </div>
-        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 320, height: 320, borderRadius: '50%', border: '1px solid rgba(168,85,247,0.06)', animation: 'spin-slow 40s linear infinite reverse', pointerEvents: 'none' }}>
-          <div style={{ position: 'absolute', bottom: 0, left: '50%', width: 6, height: 6, borderRadius: '50%', background: '#7C3AED', boxShadow: '0 0 16px #7C3AED', transform: 'translateX(-50%)' }} />
+        {/* Central Orb Visual */}
+        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 280, height: 280, pointerEvents: 'none' }}>
+          {/* Outer glow */}
+          <div style={{ position: 'absolute', inset: -60, borderRadius: '50%', background: 'radial-gradient(circle, rgba(124,58,237,0.25) 0%, rgba(168,85,247,0.08) 40%, transparent 70%)', animation: 'glow-pulse 4s ease-in-out infinite' }} />
+          {/* Ring 1 */}
+          <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: '1px solid rgba(124,58,237,0.2)', animation: 'spin-slow 20s linear infinite' }}>
+            <div style={{ position: 'absolute', top: 0, left: '50%', width: 10, height: 10, borderRadius: '50%', background: '#A855F7', boxShadow: '0 0 20px #A855F7', transform: 'translateX(-50%)' }} />
+          </div>
+          {/* Ring 2 */}
+          <div style={{ position: 'absolute', inset: 40, borderRadius: '50%', border: '1px solid rgba(168,85,247,0.12)', animation: 'spin-slow 30s linear infinite reverse' }}>
+            <div style={{ position: 'absolute', bottom: 0, left: '50%', width: 8, height: 8, borderRadius: '50%', background: '#7C3AED', boxShadow: '0 0 16px #7C3AED', transform: 'translateX(-50%)' }} />
+          </div>
+          {/* Ring 3 */}
+          <div style={{ position: 'absolute', inset: 70, borderRadius: '50%', border: '1px solid rgba(192,132,252,0.08)', animation: 'spin-slow 15s linear infinite' }}>
+            <div style={{ position: 'absolute', top: '50%', right: 0, width: 6, height: 6, borderRadius: '50%', background: '#C084FC', boxShadow: '0 0 14px #C084FC', transform: 'translateY(-50%)' }} />
+          </div>
+          {/* Core orb */}
+          <div style={{ position: 'absolute', inset: 90, borderRadius: '50%', background: 'radial-gradient(circle at 40% 40%, rgba(168,85,247,0.6), rgba(124,58,237,0.3) 60%, rgba(91,33,182,0.1) 100%)', boxShadow: '0 0 60px rgba(124,58,237,0.4), 0 0 120px rgba(168,85,247,0.2), inset 0 0 40px rgba(255,255,255,0.1)' }} />
         </div>
 
         <div style={{ position: 'relative', zIndex: 1, maxWidth: 860, margin: '0 auto', width: '100%' }}>
