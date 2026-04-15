@@ -3,360 +3,342 @@ import { useState, useEffect, useRef } from 'react';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
-// ─── Animated Counter ───
+// ─── Counter Animation ───
 function Counter({ end, suffix = '' }) {
   const [count, setCount] = useState(0);
   const ref = useRef(null);
-  const counted = useRef(false);
-
+  const done = useRef(false);
   useEffect(() => {
-    const observer = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && !counted.current) {
-        counted.current = true;
-        let start = 0;
-        const duration = 2000;
-        const step = (timestamp) => {
-          if (!start) start = timestamp;
-          const progress = Math.min((timestamp - start) / duration, 1);
-          const eased = 1 - Math.pow(1 - progress, 3);
-          setCount(Math.floor(eased * end));
-          if (progress < 1) requestAnimationFrame(step);
-        };
+    const ob = new IntersectionObserver(e => {
+      if (e[0].isIntersecting && !done.current) {
+        done.current = true;
+        let s = 0;
+        const dur = 2000;
+        const step = t => { if (!s) s = t; const p = Math.min((t - s) / dur, 1); setCount(Math.floor((1 - Math.pow(1 - p, 3)) * end)); if (p < 1) requestAnimationFrame(step); };
         requestAnimationFrame(step);
       }
     }, { threshold: 0.3 });
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
+    if (ref.current) ob.observe(ref.current);
+    return () => ob.disconnect();
   }, [end]);
-
   return <span ref={ref}>{count}{suffix}</span>;
 }
 
 // ─── Scroll Reveal ───
-function Reveal({ children, className = '', delay = 0 }) {
+function R({ children, d = 0 }) {
   const ref = useRef(null);
-  const [visible, setVisible] = useState(false);
-
+  const [v, setV] = useState(false);
   useEffect(() => {
-    const observer = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting) { setVisible(true); observer.disconnect(); }
-    }, { threshold: 0.1 });
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
+    const ob = new IntersectionObserver(e => { if (e[0].isIntersecting) { setV(true); ob.disconnect(); } }, { threshold: 0.1 });
+    if (ref.current) ob.observe(ref.current);
+    return () => ob.disconnect();
   }, []);
-
-  return (
-    <div ref={ref} className={visible ? `animate-fade-up delay-${delay}` : ''} style={{ opacity: visible ? undefined : 0 }}>
-      {children}
-    </div>
-  );
+  return <div ref={ref} style={{ opacity: v ? 1 : 0, transform: v ? 'translateY(0)' : 'translateY(30px)', transition: `all 0.7s cubic-bezier(0.16,1,0.3,1) ${d * 0.1}s` }}>{children}</div>;
 }
 
-// ─── LANDING PAGE ───
+// ══════════════════════════════════════
+// LANDING PAGE — KILO.AI CLONE
+// ══════════════════════════════════════
 function LandingPage({ onGetStarted }) {
   const [openFaq, setOpenFaq] = useState(null);
-  const [mobileMenu, setMobileMenu] = useState(false);
-
-  const NEWS = [
-    { date: 'Apr 2026', title: 'UYWNIX Claw Launches with 500+ AI Models', excerpt: 'One-click deploy your personal 24/7 AI agent. Free models included, no API key needed.', icon: '🚀' },
-    { date: 'Apr 2026', title: 'UYWNI Social App Enters Beta', excerpt: 'Connect, share, and build community. Privacy-first social media for everyone.', icon: '💬' },
-    { date: 'Mar 2026', title: 'UYWNIX Partners with Ollama Cloud', excerpt: 'Free cloud AI models for all UYWNIX Claw users. GLM-5.1, Llama 4, Mistral, and more.', icon: '🤝' },
-  ];
-
-  const SERVICES = [
-    { icon: '⚡', title: 'AI Agent Deployment', desc: 'Deploy your AI agent in 60 seconds. No servers, no config, no hassle. Just click and go.', color: 'purple' },
-    { icon: '🌐', title: 'Web Development', desc: 'Custom websites and web applications. From landing pages to full-stack platforms.', color: 'blue' },
-    { icon: '📱', title: 'Mobile Apps', desc: 'Native and cross-platform mobile applications. iOS and Android from a single codebase.', color: 'green' },
-    { icon: '🛡️', title: 'Cloud Infrastructure', desc: 'Secure, scalable cloud hosting. Alibaba Cloud, Oracle Cloud, or your own servers.', color: 'orange' },
-    { icon: '🎨', title: 'Brand & Design', desc: 'World-class visual identity. Logo, UI/UX, brand guidelines, and design systems.', color: 'pink' },
-    { icon: '📞', title: 'AI Calling Agents', desc: 'Voice AI for your business. Inbound support, outbound sales, appointment booking.', color: 'cyan' },
-  ];
 
   const FAQ = [
-    { q: 'What is UYWNIX?', a: 'UYWNIX is an AI and software company building products for everyone. Our two flagship products are UYWNIX Claw (hosted AI agent platform) and UYWNI (social media app).' },
-    { q: 'What is UYWNIX Claw?', a: 'UYWNIX Claw is a hosted AI agent platform. One-click deploy, no servers needed. Your personal 24/7 AI assistant powered by 500+ models, built on OpenClaw.' },
-    { q: 'What is UYWNI?', a: 'UYWNI is our social media app. Connect with people, share posts and stories, message and call in real-time. Privacy-first design, no data selling.' },
     { q: 'Is UYWNIX Claw free?', a: 'Yes! Free AI models (GLM-5.1, Llama 4, Mistral, Qwen 3, DeepSeek R1) work without any API key. Premium models (Claude, GPT-4o, Gemini) require your own key.' },
-    { q: 'What services does UYWNIX offer?', a: 'We offer AI agent deployment, web development, mobile apps, cloud infrastructure, brand & design, and AI calling agents. Everything a business needs to go digital.' },
-    { q: 'Can I self-host UYWNIX Claw?', a: 'Absolutely. Built on open-source OpenClaw. Deploy on any cloud: Alibaba, Oracle, Hetzner, or your own server.' },
-    { q: 'Where is UYWNIX based?', a: 'India. Serving businesses globally with a focus on Delhi NCR and the Indian market.' },
+    { q: 'How does UYWNIX handle data privacy?', a: 'Your data stays on your own instance. Token-based auth, encrypted storage, VCN firewalls. We never share or sell data.' },
+    { q: 'What platforms does UYWNIX Claw support?', a: 'Telegram, WhatsApp, Discord, Slack, and web chat. Your agent works wherever you are.' },
+    { q: 'How do Cloud Agents work?', a: 'Click deploy, pick a model, connect your platform. Your agent is provisioned and running in under 60 seconds. Fully managed infrastructure.' },
+    { q: 'Why switch to UYWNIX Claw?', a: 'One-click deploy, 500+ models, 24/7 uptime, no servers needed. Built on OpenClaw — open source, extensible, and free to self-host.' },
+  ];
+
+  const POSTS = [
+    { tag: 'AI Agents', title: "Anthropic Doesn't Want Your Subscription Anymore", desc: 'Claude Code is moving companies to API pricing — accelerating the shift to model-agnostic, usage-based AI.', date: 'Apr 2026' },
+    { tag: 'User Story', title: 'How a Delhi Founder Replaced His Accountant with UYWNIX Claw', desc: 'A real user account of drowning in bureaucracy, and building an AI bookkeeper on UYWNIX Claw that actually works.', date: 'Apr 2026' },
+    { tag: 'Engineering', title: 'Our rules for safely running OpenClaw with UYWNIX Claw in production', desc: 'Best practices for running AI agents at scale. Security, reliability, and monitoring.', date: 'Mar 2026' },
   ];
 
   return (
-    <div>
-      {/* ─── NAV ─── */}
-      <nav className="nav">
-        <div className="nav-inner">
-          <a href="#" className="nav-logo">
-            <img src="/uywnix-logo.jpg" alt="UYWNIX" style={{ height: 36, borderRadius: 8 }} />
-            <span className="nav-logo-text">UYWNIX</span>
-          </a>
-          <div className="nav-links">
-            <a href="#products">Products</a>
-            <a href="#services">Services</a>
-            <a href="#newsroom">Newsroom</a>
-            <a href="#faq">FAQ</a>
+    <div style={{ background: '#09090B', color: '#FAFAFA', fontFamily: "'Inter', -apple-system, sans-serif", lineHeight: 1.5 }}>
+
+      {/* ═══ NAV ═══ */}
+      <nav style={{ position: 'sticky', top: 0, zIndex: 100, background: 'rgba(9,9,11,0.88)', backdropFilter: 'blur(24px) saturate(180%)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', height: 64, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+            <a href="#" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', color: 'inherit' }}>
+              <img src="/uywnix-logo.jpg" alt="UYWNIX" style={{ height: 32, borderRadius: 6 }} />
+              <span style={{ fontWeight: 700, fontSize: 17, letterSpacing: '-0.02em' }}>UYWNIX</span>
+            </a>
+            <div style={{ display: 'flex', gap: 24 }}>
+              {['Products', 'Services', 'Newsroom', 'FAQ'].map(s => (
+                <a key={s} href={`#${s.toLowerCase()}`} style={{ color: '#71717A', textDecoration: 'none', fontSize: 13, fontWeight: 500, transition: 'color 0.15s' }}>{s}</a>
+              ))}
+            </div>
           </div>
-          <div className="nav-cta">
-            <button className="btn-secondary" onClick={onGetStarted}>Sign In</button>
-            <button className="btn-primary" onClick={onGetStarted}>Get Started</button>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            <button onClick={onGetStarted} style={{ padding: '7px 16px', background: 'transparent', color: '#A1A1AA', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>Sign In</button>
+            <button onClick={onGetStarted} style={{ padding: '7px 16px', background: '#FAFAFA', color: '#09090B', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>Get Started</button>
           </div>
         </div>
       </nav>
 
-      {/* ─── HERO ─── */}
-      <section className="hero">
-        <div className="hero-content">
-          <div className="hero-badge animate-fade delay-1">
-            <span className="hero-badge-dot" />
-            AI Company for Everyone
-          </div>
-          <h1 className="animate-fade-up delay-2">
-            Build the future<br />
-            with <span className="hero-gradient">UYWNIX</span>
-          </h1>
-          <p className="hero-sub animate-fade-up delay-3">
-            AI agents that work 24/7. Social apps that connect people. World-class services that bring businesses online. This is UYWNIX.
-          </p>
-          <div className="hero-actions animate-fade-up delay-4">
-            <button className="hero-btn-primary" onClick={onGetStarted}>
-              🦞 Deploy Your Agent
-            </button>
-            <a href="#products" className="hero-btn-secondary" style={{ textDecoration: 'none' }}>
-              Explore Products ↓
-            </a>
-          </div>
-          <div className="hero-powered animate-fade delay-5">
-            Powered by OpenClaw
-          </div>
-        </div>
-      </section>
-
-      {/* ─── TICKER ─── */}
-      <div className="ticker">
-        <div className="ticker-inner">
-          {Array(2).fill(null).map((_, i) => (
-            <div key={i} style={{ display: 'inline-flex', gap: 48 }}>
-              {['GLM-5.1', 'Llama 4', 'Mistral Large', 'Qwen 3', 'DeepSeek R1', 'Claude 4', 'GPT-4o', 'Gemini 2.5', 'Telegram', 'WhatsApp', 'Discord', 'Slack', 'WebChat', 'OpenClaw', 'Ollama Cloud', 'Free Tier', '24/7 Uptime', '1-Click Deploy'].map((item, j) => (
-                <span key={j} className="ticker-item"><span className="ticker-dot" />{item}</span>
-              ))}
+      {/* ═══ HERO ═══ */}
+      <section style={{ position: 'relative', padding: '120px 24px 80px', textAlign: 'center', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 80% 50% at 50% -20%, rgba(124,58,237,0.12), transparent 60%)' }} />
+        <div style={{ position: 'relative', zIndex: 1, maxWidth: 800, margin: '0 auto' }}>
+          <R>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '5px 14px', borderRadius: 999, background: 'rgba(124,58,237,0.06)', border: '1px solid rgba(124,58,237,0.15)', fontSize: 12, color: '#A855F7', fontFamily: "'JetBrains Mono', monospace", fontWeight: 500, letterSpacing: '0.06em', marginBottom: 24 }}>
+              <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#A855F7', boxShadow: '0 0 8px #A855F7' }} />
+              Powered by OpenClaw
             </div>
-          ))}
+          </R>
+          <R d={1}>
+            <p style={{ fontSize: 14, color: '#A855F7', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600, fontFamily: "'JetBrains Mono', monospace", marginBottom: 16 }}>AI for everyone</p>
+          </R>
+          <R d={2}>
+            <h1 style={{ fontSize: 64, fontWeight: 800, letterSpacing: '-0.045em', lineHeight: 1.05, marginBottom: 20 }}>
+              From pull request to<br />
+              <span style={{ background: 'linear-gradient(135deg, #7C3AED, #A855F7, #C084FC, #E879F9)', backgroundSize: '300% 300%', animation: 'gradient-shift 8s ease infinite', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>grocery list</span> — we've got you covered.
+            </h1>
+          </R>
+          <R d={3}>
+            <p style={{ fontSize: 17, color: '#71717A', maxWidth: 500, margin: '0 auto 12px' }}>
+              Coding agent for developers. Always on AI for everyone.
+            </p>
+          </R>
+          <R d={3}>
+            <p style={{ fontSize: 13, color: '#52525B', fontFamily: "'JetBrains Mono', monospace" }}>
+              VS Code, CLI, Telegram, WhatsApp, & more
+            </p>
+          </R>
         </div>
-      </div>
+      </section>
 
-      {/* ─── PRODUCTS ─── */}
-      <section id="products" className="section">
-        <div className="section-inner">
-          <Reveal><div className="section-label">// Products</div></Reveal>
-          <Reveal delay={1}><div className="section-title">Two products.<br />One mission.</div></Reveal>
-          <Reveal delay={2}><div className="section-desc">Everything you need — an always-on AI agent and a social app for real connections.</div></Reveal>
+      {/* ═══ TWO PRODUCT CARDS ═══ */}
+      <section id="products" style={{ padding: '0 24px 80px' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
 
-          <div className="products-grid">
-            {/* UYWNIX Claw */}
-            <Reveal delay={3}>
-              <div className="product-card purple">
-                <div className="product-glow purple" />
-                <div style={{ position: 'relative', zIndex: 1 }}>
-                  <div className="product-badge purple">
-                    <span className="product-badge-dot purple" />
-                    Hosted in 2 clicks
-                  </div>
-                  <div className="product-name">UYWNIX Claw</div>
-                  <div className="product-tagline">Your personal 24/7 AI agent. Natively connected to 500+ models.</div>
-                  <div className="product-features">
-                    <div className="product-feature"><span className="product-feature-icon">⚡</span><span className="product-feature-text"><strong>One-click deploy</strong> — Skip Docker, servers, config. Your agent is ready in seconds.</span></div>
-                    <div className="product-feature"><span className="product-feature-icon">💬</span><span className="product-feature-text"><strong>Chat anywhere</strong> — Telegram, WhatsApp, Discord, Slack, or web. Real actions, not just chat.</span></div>
-                    <div className="product-feature"><span className="product-feature-icon">🔄</span><span className="product-feature-text"><strong>Automated workflows</strong> — Cron jobs, email monitoring, calendar management. Runs 24/7.</span></div>
-                    <div className="product-feature"><span className="product-feature-icon">🧠</span><span className="product-feature-text"><strong>500+ models</strong> — Free models included. Premium models with your own key.</span></div>
-                    <div className="product-feature"><span className="product-feature-icon">🛡️</span><span className="product-feature-text"><strong>Fully managed</strong> — Infrastructure, security, updates handled. Powered by OpenClaw.</span></div>
-                  </div>
-                  <button className="product-btn purple" onClick={onGetStarted}>🦞 Deploy Now →</button>
+          {/* UYWNIX Claw */}
+          <R d={1}>
+            <div style={{ background: '#0F0F12', border: '1px solid rgba(124,58,237,0.2)', borderRadius: 20, padding: '40px 36px', position: 'relative', overflow: 'hidden', transition: 'all 0.3s' }}>
+              <div style={{ position: 'absolute', top: -60, right: -60, width: 200, height: 200, borderRadius: '50%', background: 'radial-gradient(circle, rgba(124,58,237,0.1), transparent 70%)', pointerEvents: 'none' }} />
+              <div style={{ position: 'relative', zIndex: 1 }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '5px 12px', borderRadius: 999, background: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.15)', fontSize: 12, color: '#A855F7', fontWeight: 600, marginBottom: 24 }}>
+                  <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#A855F7', boxShadow: '0 0 8px #A855F7', animation: 'pulse-glow 2s infinite' }} />
+                  Hosted in 2 clicks
                 </div>
+                <h2 style={{ fontSize: 36, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 6 }}>UYWNIX Claw</h2>
+                <p style={{ fontSize: 14, color: '#71717A', marginBottom: 28 }}>Natively connected to 500+ models</p>
+                <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>Your personal 24/7 AI agent</h3>
+                <p style={{ fontSize: 14, color: '#52525B', lineHeight: 1.7, marginBottom: 24 }}>
+                  Automate any workflow with your own AI agent that runs around the clock. Connect to 500+ models and build custom workflows for repetitive tasks.
+                </p>
+                <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {['Runs 24/7 in the background', 'Manage tasks via Telegram or web', 'Automated workflows & cron', 'Enterprise-grade security'].map((f, i) => (
+                    <li key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 14, color: '#A1A1AA' }}>
+                      <span style={{ color: '#A855F7', fontSize: 16 }}>✓</span>{f}
+                    </li>
+                  ))}
+                </ul>
+                <button onClick={onGetStarted} style={{ padding: '12px 24px', background: 'linear-gradient(135deg, #7C3AED, #A855F7)', color: 'white', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+                  🦞 Deploy Your Agent
+                </button>
               </div>
-            </Reveal>
+            </div>
+          </R>
 
-            {/* UYWNI */}
-            <Reveal delay={4}>
-              <div className="product-card green">
-                <div className="product-glow green" />
-                <div style={{ position: 'relative', zIndex: 1 }}>
-                  <div className="product-badge green">
-                    <span className="product-badge-dot green" />
-                    Social App
-                  </div>
-                  <div className="product-name">UYWNI</div>
-                  <div className="product-tagline">Connect, share, and build your community. Privacy-first.</div>
-                  <div className="product-features">
-                    <div className="product-feature"><span className="product-feature-icon">💬</span><span className="product-feature-text"><strong>Real-time messaging</strong> — Text, voice, video calls. End-to-end encrypted.</span></div>
-                    <div className="product-feature"><span className="product-feature-icon">📸</span><span className="product-feature-text"><strong>Share moments</strong> — Posts, stories, photos. Express yourself freely.</span></div>
-                    <div className="product-feature"><span className="product-feature-icon">🔒</span><span className="product-feature-text"><strong>Privacy-first</strong> — Your data is yours. We never sell or share it.</span></div>
-                    <div className="product-feature"><span className="product-feature-icon">👥</span><span className="product-feature-text"><strong>Communities</strong> — Build groups, channels, and events that matter.</span></div>
-                    <div className="product-feature"><span className="product-feature-icon">🌍</span><span className="product-feature-text"><strong>Global reach</strong> — Available everywhere. Local first, global always.</span></div>
-                  </div>
-                  <a href="https://uywni.app" target="_blank" className="product-btn green" style={{ textDecoration: 'none' }}>Open UYWNI →</a>
+          {/* UYWNI */}
+          <R d={2}>
+            <div style={{ background: '#0F0F12', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 20, padding: '40px 36px', position: 'relative', overflow: 'hidden', transition: 'all 0.3s' }}>
+              <div style={{ position: 'absolute', top: -60, right: -60, width: 200, height: 200, borderRadius: '50%', background: 'radial-gradient(circle, rgba(34,197,94,0.06), transparent 70%)', pointerEvents: 'none' }} />
+              <div style={{ position: 'relative', zIndex: 1 }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '5px 12px', borderRadius: 999, background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.12)', fontSize: 12, color: '#22C55E', fontWeight: 600, marginBottom: 24 }}>
+                  <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#22C55E' }} />
+                  Social App
                 </div>
+                <h2 style={{ fontSize: 36, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 6 }}>UYWNI</h2>
+                <p style={{ fontSize: 14, color: '#71717A', marginBottom: 28 }}>Connect, share, and build your community</p>
+                <h3 style={{ fontSize: 18, fontWeight: 600, marginBottom: 8 }}>Social for everyone</h3>
+                <p style={{ fontSize: 14, color: '#52525B', lineHeight: 1.7, marginBottom: 24 }}>
+                  A social media platform built for real connections. Share posts, stories, and moments. Message and call in real-time. Privacy-first design.
+                </p>
+                <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {['Real-time messaging and calls', 'Share posts, stories, moments', 'Privacy-first design', 'Community building tools'].map((f, i) => (
+                    <li key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 14, color: '#A1A1AA' }}>
+                      <span style={{ color: '#22C55E', fontSize: 16 }}>✓</span>{f}
+                    </li>
+                  ))}
+                </ul>
+                <a href="https://uywni.app" target="_blank" style={{ display: 'inline-block', padding: '12px 24px', background: 'linear-gradient(135deg, #16A34A, #22C55E)', color: 'white', borderRadius: 10, fontSize: 14, fontWeight: 600, textDecoration: 'none', fontFamily: 'inherit' }}>
+                  Open UYWNI →
+                </a>
               </div>
-            </Reveal>
+            </div>
+          </R>
+        </div>
+      </section>
+
+      {/* ═══ TRUSTED BY / STATS ═══ */}
+      <section style={{ padding: '60px 24px', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+        <div style={{ maxWidth: 900, margin: '0 auto', textAlign: 'center' }}>
+          <R><p style={{ fontSize: 13, color: '#71717A', fontWeight: 500, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 32 }}>Trusted by developers at the world's most innovative companies</p></R>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 24 }}>
+            <R d={1}><div style={{ textAlign: 'center' }}><div style={{ fontSize: 44, fontWeight: 900, fontFamily: "'JetBrains Mono', monospace", background: 'linear-gradient(135deg, #7C3AED, #A855F7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}><Counter end={1} suffix="#" /></div><div style={{ fontSize: 13, color: '#71717A', marginTop: 6 }}>Open Source Product of the Month</div></div></R>
+            <R d={2}><div style={{ textAlign: 'center' }}><div style={{ fontSize: 44, fontWeight: 900, fontFamily: "'JetBrains Mono', monospace", background: 'linear-gradient(135deg, #7C3AED, #A855F7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}><Counter end={500} suffix="+" /></div><div style={{ fontSize: 13, color: '#71717A', marginTop: 6 }}>AI Models Available</div></div></R>
+            <R d={3}><div style={{ textAlign: 'center' }}><div style={{ fontSize: 44, fontWeight: 900, fontFamily: "'JetBrains Mono', monospace", background: 'linear-gradient(135deg, #7C3AED, #A855F7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}><Counter end={24} />/<Counter end={7} /></div><div style={{ fontSize: 13, color: '#71717A', marginTop: 6 }}>Always On</div></div></R>
+            <R d={4}><div style={{ textAlign: 'center' }}><div style={{ fontSize: 44, fontWeight: 900, fontFamily: "'JetBrains Mono', monospace", background: 'linear-gradient(135deg, #7C3AED, #A855F7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}><Counter end={25} suffix="T+" /></div><div style={{ fontSize: 13, color: '#71717A', marginTop: 6 }}>Tokens Processed</div></div></R>
           </div>
         </div>
       </section>
 
-      {/* ─── STATS ─── */}
-      <div className="stats">
-        <div className="stats-inner">
-          <div className="stat-item animate-fade-up delay-1"><div className="stat-value"><Counter end={500} suffix="+" /></div><div className="stat-label">AI Models</div></div>
-          <div className="stat-item animate-fade-up delay-2"><div className="stat-value"><Counter end={24} />/<Counter end={7} /></div><div className="stat-label">Always On</div></div>
-          <div className="stat-item animate-fade-up delay-3"><div className="stat-value"><Counter end={5} suffix="+" /></div><div className="stat-label">Platforms</div></div>
-          <div className="stat-item animate-fade-up delay-4"><div className="stat-value"><Counter end={60} suffix="s" /></div><div className="stat-label">Deploy Time</div></div>
+      {/* ═══ YOUR PERSONAL AI AGENT ═══ */}
+      <section style={{ padding: '100px 24px', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+        <div style={{ maxWidth: 900, margin: '0 auto' }}>
+          <R><h2 style={{ fontSize: 44, fontWeight: 800, letterSpacing: '-0.035em', marginBottom: 8 }}>Your personal AI agent</h2></R>
+          <R d={1}><p style={{ fontSize: 20, color: '#71717A', marginBottom: 12 }}>Meet UYWNIX Claw</p></R>
+          <R d={2}><p style={{ fontSize: 16, color: '#52525B', lineHeight: 1.7, marginBottom: 40 }}>A hosted AI agent that runs 24/7 — reading email, managing your calendar, and taking action on your behalf.</p></R>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 32 }}>
+            <R d={3}>
+              <div>
+                <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>One-click deploy.</h3>
+                <p style={{ fontSize: 14, color: '#52525B', lineHeight: 1.6 }}>Skip Docker, servers, and config files. Your personal AI agent is provisioned and ready in seconds.</p>
+              </div>
+            </R>
+            <R d={4}>
+              <div>
+                <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>Chat where you are.</h3>
+                <p style={{ fontSize: 14, color: '#52525B', lineHeight: 1.6 }}>Connect via Telegram, WhatsApp, Discord, or Slack. Your agent takes real actions — email, calendar, web browsing — not just chat.</p>
+              </div>
+            </R>
+            <R d={5}>
+              <div>
+                <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 8 }}>Fully managed.</h3>
+                <p style={{ fontSize: 14, color: '#52525B', lineHeight: 1.6 }}>We handle infrastructure, security, and updates. Powered by OpenClaw with access to 500+ AI models.</p>
+              </div>
+            </R>
+          </div>
         </div>
-      </div>
+      </section>
 
-      {/* ─── SERVICES ─── */}
-      <section id="services" className="section">
-        <div className="section-inner">
-          <Reveal><div className="section-label">// Services</div></Reveal>
-          <Reveal delay={1}><div className="section-title">What we build.</div></Reveal>
-          <Reveal delay={2}><div className="section-desc">From AI agents to full-scale platforms. We bring businesses online and into the future.</div></Reveal>
-
-          <div className="services-grid">
-            {SERVICES.map((s, i) => (
-              <Reveal key={i} delay={i + 1}>
-                <div className="service-card">
-                  <div className={`service-icon ${s.color}`}>{s.icon}</div>
-                  <div className="service-title">{s.title}</div>
-                  <div className="service-desc">{s.desc}</div>
+      {/* ═══ SERVICES ═══ */}
+      <section id="services" style={{ padding: '100px 24px', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <R><p style={{ fontSize: 12, color: '#A855F7', letterSpacing: '0.15em', textTransform: 'uppercase', fontFamily: "'JetBrains Mono', monospace", fontWeight: 600, marginBottom: 8 }}>// Services</p></R>
+          <R d={1}><h2 style={{ fontSize: 44, fontWeight: 800, letterSpacing: '-0.035em', marginBottom: 8 }}>Built for agentic engineering</h2></R>
+          <R d={2}><p style={{ fontSize: 16, color: '#71717A', marginBottom: 40 }}>What we build for businesses.</p></R>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+            {[
+              { icon: '⚡', title: 'AI Agent Deployment', desc: 'Deploy in 60 seconds. No servers, no config. Just click and go.' },
+              { icon: '🌐', title: 'Web Development', desc: 'Custom websites and full-stack platforms. Next.js, React, Node.' },
+              { icon: '📱', title: 'Mobile Apps', desc: 'iOS and Android from a single codebase. React Native.' },
+              { icon: '🛡️', title: 'Cloud Infrastructure', desc: 'Alibaba Cloud, Oracle, Hetzner. Secure and scalable hosting.' },
+              { icon: '🎨', title: 'Brand & Design', desc: 'Visual identity, UI/UX, brand guidelines, and design systems.' },
+              { icon: '📞', title: 'AI Calling Agents', desc: 'Voice AI for business. Inbound support, outbound sales.' },
+            ].map((s, i) => (
+              <R key={i} d={i + 1}>
+                <div style={{ background: '#0F0F12', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 16, padding: '28px 24px', transition: 'border-color 0.2s' }}>
+                  <div style={{ fontSize: 24, marginBottom: 14 }}>{s.icon}</div>
+                  <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 6 }}>{s.title}</h3>
+                  <p style={{ fontSize: 13, color: '#71717A', lineHeight: 1.6 }}>{s.desc}</p>
                 </div>
-              </Reveal>
+              </R>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ─── MODELS ─── */}
-      <section className="section" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
-        <div className="section-inner" style={{ textAlign: 'center' }}>
-          <Reveal><div className="section-label">// Models</div></Reveal>
-          <Reveal delay={1}><div className="section-title" style={{ marginLeft: 'auto', marginRight: 'auto' }}>Any model. Free ones included.</div></Reveal>
-          <Reveal delay={2}>
-            <div className="models-wrap">
-              {[
-                { name: 'GLM-5.1', free: true },
-                { name: 'Llama 4', free: true },
-                { name: 'Mistral Large', free: true },
-                { name: 'Qwen 3', free: true },
-                { name: 'DeepSeek R1', free: true },
-                { name: 'Gemma 4:31B', free: true },
-                { name: 'Claude 4 Sonnet', free: false },
-                { name: 'GPT-4o', free: false },
-                { name: 'Gemini 2.5 Pro', free: false },
-              ].map((m, i) => (
-                <span key={i} className={`model-pill ${m.free ? 'free' : 'paid'}`}>
-                  {m.name} {m.free ? '✓ Free' : '🔑 BYOK'}
-                </span>
+      {/* ═══ USE UYWNIX EVERYWHERE ═══ */}
+      <section style={{ padding: '80px 24px', textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+        <div style={{ maxWidth: 700, margin: '0 auto' }}>
+          <R><h2 style={{ fontSize: 40, fontWeight: 800, letterSpacing: '-0.035em', marginBottom: 12 }}>Use UYWNIX Everywhere</h2></R>
+          <R d={1}><p style={{ fontSize: 16, color: '#71717A', marginBottom: 8 }}>UYWNIX works where you work. Build alone or with your team.</p></R>
+          <R d={2}><p style={{ fontSize: 14, color: '#A855F7', fontFamily: "'JetBrains Mono', monospace", fontWeight: 500 }}>Use UYWNIX now free with GLM-5.1 and Llama 4</p></R>
+          <R d={3}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 8, marginTop: 32 }}>
+              {['GLM-5.1', 'Llama 4', 'Mistral Large', 'Qwen 3', 'DeepSeek R1', 'Gemma 4:31B'].map(m => (
+                <span key={m} style={{ padding: '8px 16px', borderRadius: 999, background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.12)', fontSize: 13, color: '#22C55E', fontWeight: 500 }}>{m} ✓ Free</span>
+              ))}
+              {['Claude 4', 'GPT-4o', 'Gemini 2.5'].map(m => (
+                <span key={m} style={{ padding: '8px 16px', borderRadius: 999, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', fontSize: 13, color: '#71717A', fontWeight: 500 }}>{m} 🔑 BYOK</span>
               ))}
             </div>
-          </Reveal>
-          <Reveal delay={3}><p style={{ fontSize: 14, color: '#6B6B7B', marginTop: 20 }}>Free models powered by Ollama Cloud — no API key needed. Premium models require your own key.</p></Reveal>
+          </R>
         </div>
       </section>
 
-      {/* ─── NEWSROOM ─── */}
-      <section id="newsroom" className="section" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
-        <div className="section-inner">
-          <Reveal><div className="section-label">// Newsroom</div></Reveal>
-          <Reveal delay={1}><div className="section-title">Latest from UYWNIX</div></Reveal>
-          <Reveal delay={2}><div className="section-desc">Product updates, partnerships, and company news.</div></Reveal>
-
-          <div className="newsroom-grid">
-            {NEWS.map((n, i) => (
-              <Reveal key={i} delay={i + 3}>
-                <div className="news-card">
-                  <div className="news-image">{n.icon}</div>
-                  <div className="news-body">
-                    <div className="news-date">{n.date}</div>
-                    <div className="news-title">{n.title}</div>
-                    <div className="news-excerpt">{n.excerpt}</div>
-                    <span className="news-cta">Read more →</span>
-                  </div>
+      {/* ═══ NEWSROOM ═══ */}
+      <section id="newsroom" style={{ padding: '100px 24px', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <R><p style={{ fontSize: 12, color: '#A855F7', letterSpacing: '0.15em', textTransform: 'uppercase', fontFamily: "'JetBrains Mono', monospace", fontWeight: 600, marginBottom: 8 }}>// Newsroom</p></R>
+          <R d={1}><h2 style={{ fontSize: 36, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 8 }}>Recent posts</h2></R>
+          <R d={2}><p style={{ fontSize: 15, color: '#71717A', marginBottom: 40 }}>Read the latest news and updates from the UYWNIX team.</p></R>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
+            {POSTS.map((p, i) => (
+              <R key={i} d={i + 1}>
+                <div style={{ background: '#0F0F12', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 16, padding: 28, transition: 'border-color 0.2s', cursor: 'pointer' }}>
+                  <span style={{ fontSize: 11, color: '#A855F7', fontFamily: "'JetBrains Mono', monospace", fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' }}>{p.tag} · {p.date}</span>
+                  <h3 style={{ fontSize: 17, fontWeight: 700, marginTop: 12, marginBottom: 8, lineHeight: 1.3, letterSpacing: '-0.01em' }}>{p.title}</h3>
+                  <p style={{ fontSize: 13, color: '#71717A', lineHeight: 1.6 }}>{p.desc}</p>
                 </div>
-              </Reveal>
+              </R>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ─── FAQ ─── */}
-      <section id="faq" className="section" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
-        <div className="section-inner" style={{ textAlign: 'center' }}>
-          <Reveal><div className="section-label">// FAQ</div></Reveal>
-          <Reveal delay={1}><div className="section-title" style={{ marginLeft: 'auto', marginRight: 'auto' }}>Questions & Answers</div></Reveal>
-        </div>
-        <div className="faq-list">
+      {/* ═══ FAQ ═══ */}
+      <section id="faq" style={{ padding: '100px 24px', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+        <div style={{ maxWidth: 720, margin: '0 auto' }}>
+          <R><p style={{ fontSize: 12, color: '#A855F7', letterSpacing: '0.15em', textTransform: 'uppercase', fontFamily: "'JetBrains Mono', monospace", fontWeight: 600, marginBottom: 8 }}>// FAQ</p></R>
+          <R d={1}><h2 style={{ fontSize: 36, fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 8 }}>Frequently asked questions</h2></R>
+          <R d={2}><p style={{ fontSize: 15, color: '#71717A', marginBottom: 40 }}>Direct answers to common questions about UYWNIX.</p></R>
           {FAQ.map((f, i) => (
-            <Reveal key={i} delay={Math.min(i + 1, 5)}>
-              <div className="faq-item">
-                <div className="faq-question" onClick={() => setOpenFaq(openFaq === i ? null : i)}>
-                  <h4>{f.q}</h4>
-                  <span className={`faq-toggle ${openFaq === i ? 'open' : ''}`}>+</span>
+            <R key={i} d={i + 1}>
+              <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                <div onClick={() => setOpenFaq(openFaq === i ? null : i)} style={{ padding: '20px 0', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <h4 style={{ fontSize: 15, fontWeight: 500 }}>{f.q}</h4>
+                  <span style={{ color: '#A855F7', fontSize: 20, transition: 'transform 0.3s', transform: openFaq === i ? 'rotate(45deg)' : 'none', flexShrink: 0, marginLeft: 16 }}>+</span>
                 </div>
-                {openFaq === i && <div className="faq-answer">{f.a}</div>}
+                {openFaq === i && <p style={{ fontSize: 14, color: '#71717A', lineHeight: 1.7, paddingBottom: 20 }}>{f.a}</p>}
               </div>
-            </Reveal>
+            </R>
           ))}
         </div>
       </section>
 
-      {/* ─── CTA ─── */}
-      <section className="cta">
-        <div className="cta-inner">
-          <Reveal><h2>Ready to build?</h2></Reveal>
-          <Reveal delay={1}><p>Deploy your AI agent or explore our products. The future starts now.</p></Reveal>
-          <Reveal delay={2}>
-            <div className="cta-actions">
-              <button className="hero-btn-primary" onClick={onGetStarted}>🦞 Deploy Your Agent</button>
-              <a href="https://uywni.app" target="_blank" className="hero-btn-secondary" style={{ textDecoration: 'none' }}>Open UYWNI</a>
+      {/* ═══ CTA ═══ */}
+      <section style={{ padding: '120px 24px', textAlign: 'center', position: 'relative', overflow: 'hidden', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 50%, rgba(124,58,237,0.08), transparent 60%)' }} />
+        <div style={{ position: 'relative', zIndex: 1, maxWidth: 700, margin: '0 auto' }}>
+          <R><h2 style={{ fontSize: 44, fontWeight: 800, letterSpacing: '-0.04em', marginBottom: 16 }}>Ready to get started?</h2></R>
+          <R d={1}><p style={{ fontSize: 16, color: '#71717A', marginBottom: 40 }}>Choose your path — an always-on AI assistant for life, or a social app for everyone.</p></R>
+          <R d={2}>
+            <div style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}>
+              <button onClick={onGetStarted} style={{ padding: '16px 32px', background: 'linear-gradient(135deg, #7C3AED, #A855F7)', color: 'white', border: 'none', borderRadius: 12, fontSize: 16, fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }}>
+                🦞 UYWNIX Claw — Deploy Now
+              </button>
+              <a href="https://uywni.app" target="_blank" style={{ padding: '16px 32px', background: 'transparent', color: '#FAFAFA', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, fontSize: 16, fontWeight: 600, textDecoration: 'none', fontFamily: 'inherit' }}>
+                UYWNI — Social App
+              </a>
             </div>
-          </Reveal>
+          </R>
         </div>
       </section>
 
-      {/* ─── FOOTER ─── */}
-      <footer className="footer">
-        <div className="footer-inner">
-          <div className="footer-grid">
-            <div className="footer-brand">
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-                <img src="/uywnix-logo.jpg" alt="UYWNIX" style={{ height: 32, borderRadius: 8 }} />
-                <span style={{ fontWeight: 800, fontSize: 20 }}>UYWNIX</span>
-              </div>
-              <p>AI and software company building products for everyone. India-based, serving globally.</p>
-              <p style={{ marginTop: 12 }}><a href="mailto:contact@uywnix.com" style={{ color: '#A855F7', textDecoration: 'none' }}>contact@uywnix.com</a></p>
-            </div>
-            <div className="footer-col">
-              <h5>Products</h5>
-              <a href="#products">UYWNIX Claw</a>
-              <a href="#products">UYWNI</a>
-              <a href="#models">AI Models</a>
-            </div>
-            <div className="footer-col">
-              <h5>Company</h5>
-              <a href="#services">Services</a>
-              <a href="#newsroom">Newsroom</a>
-              <a href="#faq">FAQ</a>
-              <a href="mailto:contact@uywnix.com">Contact</a>
-            </div>
-            <div className="footer-col">
-              <h5>Connect</h5>
-              <a href="https://github.com/razintayyabr-netizen" target="_blank">GitHub</a>
-              <a href="https://t.me/uywnix" target="_blank">Telegram</a>
-              <a href="https://discord.com/invite/uywnix" target="_blank">Discord</a>
-            </div>
+      {/* ═══ FOOTER ═══ */}
+      <footer style={{ borderTop: '1px solid rgba(255,255,255,0.04)', padding: '48px 24px 32px' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 24 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <img src="/uywnix-logo.jpg" alt="UYWNIX" style={{ height: 28, borderRadius: 6 }} />
+            <span style={{ fontWeight: 700, fontSize: 15 }}>UYWNIX</span>
           </div>
-          <div className="footer-bottom">
-            <span>&copy; 2026 UYWNIX. All rights reserved.</span>
-            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12, color: '#4A4A5A' }}>Built with 🦞 in India</span>
+          <div style={{ display: 'flex', gap: 24, fontSize: 13, color: '#71717A' }}>
+            <a href="#products" style={{ color: '#71717A', textDecoration: 'none' }}>Products</a>
+            <a href="#services" style={{ color: '#71717A', textDecoration: 'none' }}>Services</a>
+            <a href="#newsroom" style={{ color: '#71717A', textDecoration: 'none' }}>Newsroom</a>
+            <a href="#faq" style={{ color: '#71717A', textDecoration: 'none' }}>FAQ</a>
+            <a href="https://github.com/razintayyabr-netizen" target="_blank" style={{ color: '#71717A', textDecoration: 'none' }}>GitHub</a>
+            <a href="mailto:contact@uywnix.com" style={{ color: '#71717A', textDecoration: 'none' }}>Contact</a>
           </div>
+          <span style={{ fontSize: 12, color: '#3F3F46', fontFamily: "'JetBrains Mono', monospace" }}>© 2026 UYWNIX</span>
         </div>
       </footer>
     </div>
@@ -373,8 +355,7 @@ function AuthScreen({ onAuth }) {
   const [loading, setLoading] = useState(false);
 
   const submit = async (e) => {
-    e.preventDefault();
-    setError(''); setLoading(true);
+    e.preventDefault(); setError(''); setLoading(true);
     try {
       const body = mode === 'signup' ? { name, email, password } : { email, password };
       const res = await fetch(`${API}/auth/${mode}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
@@ -387,39 +368,21 @@ function AuthScreen({ onAuth }) {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#050507', position: 'relative' }}>
-      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 30%, rgba(124,58,237,0.15) 0%, transparent 60%)' }} />
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#09090B' }}>
+      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 30%, rgba(124,58,237,0.12), transparent 60%)' }} />
       <div style={{ position: 'relative', zIndex: 1, width: 400, maxWidth: '90vw' }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <img src="/uywnix-logo.jpg" alt="UYWNIX" style={{ width: 56, height: 56, borderRadius: 16, margin: '0 auto 16px', display: 'block', boxShadow: '0 0 40px rgba(124,58,237,0.3)' }} />
-          <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.02em' }}>UYWNIX Claw</h1>
-          <p style={{ color: '#6B6B7B', fontSize: 14, marginTop: 4 }}>Your personal 24/7 AI agent</p>
+          <h1 style={{ fontSize: 24, fontWeight: 800, letterSpacing: '-0.02em' }}>UYWNIX Claw</h1>
+          <p style={{ color: '#71717A', fontSize: 14, marginTop: 4 }}>Your personal 24/7 AI agent</p>
         </div>
-        <form onSubmit={submit} style={{ background: '#0A0A10', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 20, padding: 32 }}>
-          {mode === 'signup' && (
-            <div style={{ marginBottom: 16 }}>
-              <label style={{ fontSize: 12, fontWeight: 600, color: '#9CA3AF', letterSpacing: '0.08em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>Full Name</label>
-              <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Your name" required style={{ width: '100%', padding: '14px 16px', borderRadius: 12, background: '#050507', border: '1px solid rgba(255,255,255,0.08)', color: '#E8E8ED', fontSize: 15, outline: 'none', fontFamily: 'Inter, sans-serif', boxSizing: 'border-box' }} />
-            </div>
-          )}
-          <div style={{ marginBottom: 16 }}>
-            <label style={{ fontSize: 12, fontWeight: 600, color: '#9CA3AF', letterSpacing: '0.08em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>Email</label>
-            <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@email.com" required style={{ width: '100%', padding: '14px 16px', borderRadius: 12, background: '#050507', border: '1px solid rgba(255,255,255,0.08)', color: '#E8E8ED', fontSize: 15, outline: 'none', fontFamily: 'Inter, sans-serif', boxSizing: 'border-box' }} />
-          </div>
-          <div style={{ marginBottom: 24 }}>
-            <label style={{ fontSize: 12, fontWeight: 600, color: '#9CA3AF', letterSpacing: '0.08em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>Password</label>
-            <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required style={{ width: '100%', padding: '14px 16px', borderRadius: 12, background: '#050507', border: '1px solid rgba(255,255,255,0.08)', color: '#E8E8ED', fontSize: 15, outline: 'none', fontFamily: 'Inter, sans-serif', boxSizing: 'border-box' }} />
-          </div>
+        <form onSubmit={submit} style={{ background: '#0F0F12', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 20, padding: 32 }}>
+          {mode === 'signup' && <div style={{ marginBottom: 16 }}><label style={{ fontSize: 12, fontWeight: 600, color: '#71717A', letterSpacing: '0.06em', textTransform: 'uppercase', display: 'block', marginBottom: 6 }}>Full Name</label><input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Your name" required style={{ width: '100%', padding: '12px 14px', borderRadius: 10, background: '#09090B', border: '1px solid rgba(255,255,255,0.08)', color: '#FAFAFA', fontSize: 14, outline: 'none', fontFamily: 'Inter, sans-serif', boxSizing: 'border-box' }} /></div>}
+          <div style={{ marginBottom: 16 }}><label style={{ fontSize: 12, fontWeight: 600, color: '#71717A', letterSpacing: '0.06em', textTransform: 'uppercase', display: 'block', marginBottom: 6 }}>Email</label><input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@email.com" required style={{ width: '100%', padding: '12px 14px', borderRadius: 10, background: '#09090B', border: '1px solid rgba(255,255,255,0.08)', color: '#FAFAFA', fontSize: 14, outline: 'none', fontFamily: 'Inter, sans-serif', boxSizing: 'border-box' }} /></div>
+          <div style={{ marginBottom: 24 }}><label style={{ fontSize: 12, fontWeight: 600, color: '#71717A', letterSpacing: '0.06em', textTransform: 'uppercase', display: 'block', marginBottom: 6 }}>Password</label><input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" required style={{ width: '100%', padding: '12px 14px', borderRadius: 10, background: '#09090B', border: '1px solid rgba(255,255,255,0.08)', color: '#FAFAFA', fontSize: 14, outline: 'none', fontFamily: 'Inter, sans-serif', boxSizing: 'border-box' }} /></div>
           {error && <p style={{ color: '#EF4444', fontSize: 13, marginBottom: 16, textAlign: 'center' }}>{error}</p>}
-          <button type="submit" disabled={loading} style={{ width: '100%', padding: 16, background: loading ? '#1A1A24' : 'linear-gradient(135deg, #7C3AED, #A855F7)', color: 'white', border: 'none', borderRadius: 12, fontSize: 16, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'Inter, sans-serif' }}>
-            {loading ? 'Please wait...' : mode === 'signup' ? 'Create Account' : 'Sign In'}
-          </button>
-          <p style={{ textAlign: 'center', fontSize: 14, color: '#6B6B7B', marginTop: 20 }}>
-            {mode === 'signup' ? 'Already have an account?' : "Don't have an account?"}{' '}
-            <span onClick={() => { setMode(mode === 'signup' ? 'login' : 'signup'); setError(''); }} style={{ color: '#A855F7', cursor: 'pointer', fontWeight: 600 }}>
-              {mode === 'signup' ? 'Sign In' : 'Sign Up'}
-            </span>
-          </p>
+          <button type="submit" disabled={loading} style={{ width: '100%', padding: 14, background: loading ? '#1A1A24' : 'linear-gradient(135deg, #7C3AED, #A855F7)', color: 'white', border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'Inter, sans-serif' }}>{loading ? 'Please wait...' : mode === 'signup' ? 'Create Account' : 'Sign In'}</button>
+          <p style={{ textAlign: 'center', fontSize: 13, color: '#71717A', marginTop: 20 }}>{mode === 'signup' ? 'Already have an account?' : "Don't have an account?"} <span onClick={() => { setMode(mode === 'signup' ? 'login' : 'signup'); setError(''); }} style={{ color: '#A855F7', cursor: 'pointer', fontWeight: 600 }}>{mode === 'signup' ? 'Sign In' : 'Sign Up'}</span></p>
         </form>
       </div>
     </div>
@@ -461,116 +424,62 @@ function Dashboard({ user, token, onLogout }) {
 
   const createAgent = async () => {
     if (!agentName) return; setDeploying(true);
-    try {
-      const r = await fetch(`${API}/agents`, { method: 'POST', headers, body: JSON.stringify({ name: agentName, model: selectedModel, platforms: selectedPlatforms }) });
-      const d = await r.json();
-      if (d.agent) { setAgents(prev => [d.agent, ...prev]); setAgentName(''); setSelectedPlatforms([]); setView('dashboard'); }
-    } catch {} setDeploying(false); fetchStats();
+    try { const r = await fetch(`${API}/agents`, { method: 'POST', headers, body: JSON.stringify({ name: agentName, model: selectedModel, platforms: selectedPlatforms }) }); const d = await r.json(); if (d.agent) { setAgents(prev => [d.agent, ...prev]); setAgentName(''); setSelectedPlatforms([]); setView('dashboard'); } } catch {} setDeploying(false); fetchStats();
   };
-
-  const toggleAgent = async (id, status) => {
-    const ns = status === 'running' ? 'stopped' : 'running';
-    try { await fetch(`${API}/agents/${id}`, { method: 'PATCH', headers, body: JSON.stringify({ status: ns }) }); setAgents(prev => prev.map(a => a.id === id ? { ...a, status: ns } : a)); } catch {}
-    fetchStats();
-  };
-
-  const deleteAgent = async (id) => {
-    try { await fetch(`${API}/agents/${id}`, { method: 'DELETE', headers }); setAgents(prev => prev.filter(a => a.id !== id)); } catch {}
-    fetchStats();
-  };
+  const toggleAgent = async (id, status) => { const ns = status === 'running' ? 'stopped' : 'running'; try { await fetch(`${API}/agents/${id}`, { method: 'PATCH', headers, body: JSON.stringify({ status: ns }) }); setAgents(prev => prev.map(a => a.id === id ? { ...a, status: ns } : a)); } catch {} fetchStats(); };
+  const deleteAgent = async (id) => { try { await fetch(`${API}/agents/${id}`, { method: 'DELETE', headers }); setAgents(prev => prev.filter(a => a.id !== id)); } catch {} fetchStats(); };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#050507', display: 'flex' }}>
-      <div style={{ width: 240, background: '#0A0A10', borderRight: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', position: 'fixed', top: 0, bottom: 0, left: 0 }}>
-        <div style={{ padding: '20px 16px', display: 'flex', alignItems: 'center', gap: 10 }}>
-          <img src="/uywnix-logo.jpg" alt="UYWNIX" style={{ height: 32, borderRadius: 8 }} />
-          <div><div style={{ fontWeight: 800, fontSize: 15 }}>UYWNIX</div><div style={{ fontSize: 9, color: '#6B6B7B', letterSpacing: '0.12em', textTransform: 'uppercase' }}>Claw</div></div>
+    <div style={{ minHeight: '100vh', background: '#09090B', display: 'flex' }}>
+      <div style={{ width: 220, background: '#0F0F12', borderRight: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', position: 'fixed', top: 0, bottom: 0, left: 0 }}>
+        <div style={{ padding: '16px 14px', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <img src="/uywnix-logo.jpg" alt="UYWNIX" style={{ height: 28, borderRadius: 6 }} />
+          <div><div style={{ fontWeight: 700, fontSize: 14 }}>UYWNIX</div><div style={{ fontSize: 9, color: '#71717A', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Claw</div></div>
         </div>
-        <nav style={{ padding: '8px 12px', flex: 1 }}>
+        <nav style={{ padding: '6px 10px', flex: 1 }}>
           {[{ id: 'dashboard', label: 'Dashboard', icon: '📊' }, { id: 'create', label: 'New Agent', icon: '⚡' }, { id: 'models', label: 'Models', icon: '🧠' }, { id: 'settings', label: 'Settings', icon: '⚙️' }].map(item => (
-            <button key={item.id} onClick={() => setView(item.id)} style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '10px 14px', borderRadius: 10, background: view === item.id ? 'rgba(124,58,237,0.1)' : 'transparent', border: 'none', color: view === item.id ? '#A855F7' : '#6B6B7B', fontSize: 14, fontWeight: view === item.id ? 600 : 400, cursor: 'pointer', textAlign: 'left', fontFamily: 'Inter, sans-serif', marginBottom: 4 }}>
+            <button key={item.id} onClick={() => setView(item.id)} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '8px 12px', borderRadius: 8, background: view === item.id ? 'rgba(124,58,237,0.08)' : 'transparent', border: 'none', color: view === item.id ? '#A855F7' : '#71717A', fontSize: 13, fontWeight: view === item.id ? 600 : 400, cursor: 'pointer', textAlign: 'left', fontFamily: 'Inter, sans-serif', marginBottom: 2 }}>
               <span>{item.icon}</span> {item.label}
             </button>
           ))}
         </nav>
-        <div style={{ padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'linear-gradient(135deg, #7C3AED, #A855F7)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700 }}>{user.name?.[0]?.toUpperCase()}</div>
-          <div style={{ flex: 1, overflow: 'hidden' }}><div style={{ fontSize: 13, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.name}</div><div style={{ fontSize: 11, color: '#6B6B7B' }}>{user.email}</div></div>
-          <button onClick={onLogout} style={{ background: 'none', border: 'none', color: '#6B6B7B', cursor: 'pointer', fontSize: 18, padding: 4 }}>→</button>
+        <div style={{ padding: '10px 14px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'linear-gradient(135deg, #7C3AED, #A855F7)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700 }}>{user.name?.[0]?.toUpperCase()}</div>
+          <div style={{ flex: 1, overflow: 'hidden' }}><div style={{ fontSize: 12, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.name}</div><div style={{ fontSize: 10, color: '#71717A' }}>{user.email}</div></div>
+          <button onClick={onLogout} style={{ background: 'none', border: 'none', color: '#71717A', cursor: 'pointer', fontSize: 16, padding: 2 }}>→</button>
         </div>
       </div>
-
-      <div style={{ marginLeft: 240, flex: 1, padding: '32px 40px' }}>
+      <div style={{ marginLeft: 220, flex: 1, padding: '28px 32px' }}>
         {view === 'dashboard' && (<>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 }}>
-            <div><h1 style={{ fontSize: 28, fontWeight: 700 }}>Welcome back, {user.name?.split(' ')[0]}</h1><p style={{ color: '#6B6B7B', fontSize: 14, marginTop: 4 }}>{agents.length === 0 ? 'Deploy your first AI agent' : `${stats.activeAgents} active`}</p></div>
-            <button onClick={() => setView('create')} className="btn-primary">+ New Agent</button>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+            <div><h1 style={{ fontSize: 24, fontWeight: 700 }}>Welcome back, {user.name?.split(' ')[0]}</h1><p style={{ color: '#71717A', fontSize: 13, marginTop: 2 }}>{agents.length === 0 ? 'Deploy your first AI agent' : `${stats.activeAgents} active`}</p></div>
+            <button onClick={() => setView('create')} style={{ padding: '8px 20px', background: 'linear-gradient(135deg, #7C3AED, #A855F7)', color: 'white', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>+ New Agent</button>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 32 }}>
-            {[{ label: 'Active', value: stats.activeAgents, color: '#22C55E' }, { label: 'Total', value: stats.totalAgents, color: '#7C3AED' }, { label: 'Platforms', value: stats.platforms, color: '#3B82F6' }, { label: 'Messages', value: stats.messages, color: '#F59E0B' }].map((s, i) => (
-              <div key={i} style={{ background: '#0A0A10', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: 20 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ fontSize: 12, color: '#6B6B7B', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600 }}>{s.label}</span></div>
-                <div style={{ fontSize: 28, fontWeight: 700, color: s.color, fontFamily: "'JetBrains Mono', monospace", marginTop: 8 }}>{s.value}</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
+            {[{ label: 'Active', value: stats.activeAgents, color: '#22C55E' }, { label: 'Total', value: stats.totalAgents, color: '#A855F7' }, { label: 'Platforms', value: stats.platforms, color: '#3B82F6' }, { label: 'Messages', value: stats.messages, color: '#F59E0B' }].map((s, i) => (
+              <div key={i} style={{ background: '#0F0F12', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12, padding: 16 }}>
+                <div style={{ fontSize: 11, color: '#71717A', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>{s.label}</div>
+                <div style={{ fontSize: 24, fontWeight: 700, color: s.color, fontFamily: "'JetBrains Mono', monospace", marginTop: 6 }}>{s.value}</div>
               </div>
             ))}
           </div>
           {agents.length === 0 ? (
-            <div style={{ background: '#0A0A10', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 20, padding: 80, textAlign: 'center' }}>
-              <img src="/uywnix-logo.jpg" alt="UYWNIX" style={{ width: 56, height: 56, borderRadius: 16, marginBottom: 20 }} />
-              <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 8 }}>No agents yet</h2>
-              <p style={{ color: '#6B6B7B', fontSize: 15, marginBottom: 28 }}>Deploy your first AI agent. It takes 60 seconds.</p>
-              <button onClick={() => setView('create')} className="btn-primary" style={{ padding: '14px 32px', fontSize: 16 }}>⚡ Create First Agent</button>
+            <div style={{ background: '#0F0F12', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 16, padding: 64, textAlign: 'center' }}>
+              <img src="/uywnix-logo.jpg" alt="UYWNIX" style={{ width: 56, height: 56, borderRadius: 16, marginBottom: 16 }} />
+              <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 6 }}>No agents yet</h2>
+              <p style={{ color: '#71717A', fontSize: 14, marginBottom: 24 }}>Deploy your first AI agent. It takes 60 seconds.</p>
+              <button onClick={() => setView('create')} style={{ padding: '12px 28px', background: 'linear-gradient(135deg, #7C3AED, #A855F7)', color: 'white', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter, sans-serif' }}>⚡ Create First Agent</button>
             </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {agents.map(agent => (
-                <div key={agent.id} style={{ background: '#0A0A10', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14, padding: '18px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                    <div style={{ width: 10, height: 10, borderRadius: '50%', background: agent.status === 'running' ? '#22C55E' : '#6B6B7B', boxShadow: agent.status === 'running' ? '0 0 10px rgba(34,197,94,0.5)' : 'none' }} />
-                    <div><div style={{ fontWeight: 600 }}>{agent.name}</div><div style={{ fontSize: 12, color: '#6B6B7B', marginTop: 2 }}>{MODELS.find(m => m.id === agent.model)?.name} · {(agent.platforms || []).map(p => PLATFORMS.find(pl => pl.id === p)?.name).filter(Boolean).join(', ') || 'No platform'}</div></div>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={{ fontSize: 11, padding: '4px 10px', borderRadius: 999, background: agent.status === 'running' ? 'rgba(34,197,94,0.1)' : 'rgba(107,107,123,0.1)', color: agent.status === 'running' ? '#22C55E' : '#6B6B7B', fontWeight: 600 }}>{agent.status?.toUpperCase()}</span>
-                    <button onClick={() => toggleAgent(agent.id, agent.status)} style={{ padding: '7px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#E8E8ED', cursor: 'pointer', fontSize: 12 }}>{agent.status === 'running' ? 'Stop' : 'Start'}</button>
-                    <button onClick={() => deleteAgent(agent.id)} style={{ padding: '7px 14px', borderRadius: 8, background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)', color: '#EF4444', cursor: 'pointer', fontSize: 12 }}>Delete</button>
-                  </div>
-                </div>
-              ))}
+          ) : (<div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{agents.map(agent => (
+            <div key={agent.id} style={{ background: '#0F0F12', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12, padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}><div style={{ width: 8, height: 8, borderRadius: '50%', background: agent.status === 'running' ? '#22C55E' : '#71717A', boxShadow: agent.status === 'running' ? '0 0 8px rgba(34,197,94,0.5)' : 'none' }} /><div><div style={{ fontWeight: 600, fontSize: 14 }}>{agent.name}</div><div style={{ fontSize: 11, color: '#71717A', marginTop: 1 }}>{MODELS.find(m => m.id === agent.model)?.name} · {(agent.platforms || []).map(p => PLATFORMS.find(pl => pl.id === p)?.name).filter(Boolean).join(', ') || 'No platform'}</div></div></div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><span style={{ fontSize: 10, padding: '3px 8px', borderRadius: 999, background: agent.status === 'running' ? 'rgba(34,197,94,0.08)' : 'rgba(113,113,122,0.08)', color: agent.status === 'running' ? '#22C55E' : '#71717A', fontWeight: 600 }}>{agent.status?.toUpperCase()}</span><button onClick={() => toggleAgent(agent.id, agent.status)} style={{ padding: '5px 12px', borderRadius: 6, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', color: '#A1A1AA', cursor: 'pointer', fontSize: 11, fontFamily: 'Inter, sans-serif' }}>{agent.status === 'running' ? 'Stop' : 'Start'}</button><button onClick={() => deleteAgent(agent.id)} style={{ padding: '5px 12px', borderRadius: 6, background: 'rgba(239,68,68,0.04)', border: '1px solid rgba(239,68,68,0.1)', color: '#EF4444', cursor: 'pointer', fontSize: 11, fontFamily: 'Inter, sans-serif' }}>Delete</button></div>
             </div>
-          )}
+          ))}</div>)}
         </>)}
-        {view === 'create' && (<div style={{ maxWidth: 600 }}>
-          <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 4 }}>Create New Agent</h1>
-          <p style={{ color: '#6B6B7B', fontSize: 14, marginBottom: 32 }}>Deploy your AI agent in 60 seconds</p>
-          <div style={{ background: '#0A0A10', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 20, padding: 32 }}>
-            <div style={{ marginBottom: 24 }}>
-              <label style={{ fontSize: 12, fontWeight: 600, color: '#9CA3AF', letterSpacing: '0.08em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>Agent Name</label>
-              <input type="text" value={agentName} onChange={e => setAgentName(e.target.value)} placeholder="My AI Assistant" style={{ width: '100%', padding: '14px 16px', borderRadius: 12, background: '#050507', border: '1px solid rgba(255,255,255,0.08)', color: '#E8E8ED', fontSize: 15, outline: 'none', fontFamily: 'Inter, sans-serif', boxSizing: 'border-box' }} />
-            </div>
-            <div style={{ marginBottom: 24 }}>
-              <label style={{ fontSize: 12, fontWeight: 600, color: '#9CA3AF', letterSpacing: '0.08em', textTransform: 'uppercase', display: 'block', marginBottom: 12 }}>Choose Model</label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
-                {MODELS.map(m => (<button key={m.id} onClick={() => setSelectedModel(m.id)} style={{ padding: '14px', borderRadius: 12, border: selectedModel === m.id ? '1px solid #7C3AED' : '1px solid rgba(255,255,255,0.06)', background: selectedModel === m.id ? 'rgba(124,58,237,0.08)' : 'transparent', cursor: 'pointer', textAlign: 'left', color: 'white', fontFamily: 'Inter, sans-serif' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}><span style={{ fontSize: 14, fontWeight: 600 }}>{m.name}</span>{m.free && <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 4, background: 'rgba(34,197,94,0.1)', color: '#22C55E', fontWeight: 700 }}>FREE</span>}</div>
-                  <div style={{ fontSize: 11, color: '#6B6B7B', marginTop: 2 }}>{m.provider}</div>
-                </button>))}
-              </div>
-            </div>
-            <div style={{ marginBottom: 28 }}>
-              <label style={{ fontSize: 12, fontWeight: 600, color: '#9CA3AF', letterSpacing: '0.08em', textTransform: 'uppercase', display: 'block', marginBottom: 12 }}>Connect Platforms</label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8 }}>
-                {PLATFORMS.map(p => (<button key={p.id} onClick={() => setSelectedPlatforms(prev => prev.includes(p.id) ? prev.filter(x => x !== p.id) : [...prev, p.id])} style={{ padding: '14px 8px', borderRadius: 12, border: selectedPlatforms.includes(p.id) ? '1px solid #7C3AED' : '1px solid rgba(255,255,255,0.06)', background: selectedPlatforms.includes(p.id) ? 'rgba(124,58,237,0.08)' : 'transparent', cursor: 'pointer', textAlign: 'center', color: 'white', fontFamily: 'Inter, sans-serif' }}>
-                  <div style={{ fontSize: 22 }}>{p.icon}</div><div style={{ fontSize: 11, fontWeight: 500, marginTop: 4 }}>{p.name}</div>
-                </button>))}
-              </div>
-            </div>
-            <button onClick={createAgent} disabled={!agentName || deploying} style={{ width: '100%', padding: 16, background: (!agentName || deploying) ? '#1A1A24' : 'linear-gradient(135deg, #7C3AED, #A855F7)', color: 'white', border: 'none', borderRadius: 12, fontSize: 16, fontWeight: 700, cursor: (!agentName || deploying) ? 'not-allowed' : 'pointer', fontFamily: 'Inter, sans-serif' }}>
-              {deploying ? 'Provisioning...' : '⚡ Deploy Agent'}
-            </button>
-          </div>
-        </div>)}
-        {view === 'models' && (<><h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 4 }}>AI Models</h1><p style={{ color: '#6B6B7B', fontSize: 14, marginBottom: 32 }}>500+ models. Free ones need no API key.</p><div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>{MODELS.map(m => (<div key={m.id} style={{ background: '#0A0A10', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 16, padding: 24 }}><div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}><span style={{ fontWeight: 600, fontSize: 17 }}>{m.name}</span>{m.free ? <span style={{ fontSize: 11, padding: '4px 10px', borderRadius: 999, background: 'rgba(34,197,94,0.1)', color: '#22C55E', fontWeight: 700 }}>FREE</span> : <span style={{ fontSize: 11, padding: '4px 10px', borderRadius: 999, background: 'rgba(249,115,22,0.1)', color: '#F97316', fontWeight: 600 }}>BYOK</span>}</div><div style={{ fontSize: 13, color: '#6B6B7B' }}>Provider: {m.provider}</div></div>))}</div></>)}
-        {view === 'settings' && (<div style={{ maxWidth: 560 }}><h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 4 }}>Settings</h1><p style={{ color: '#6B6B7B', fontSize: 14, marginBottom: 32 }}>API keys and account</p><div style={{ background: '#0A0A10', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 20, padding: 28 }}><h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>API Keys</h3><p style={{ fontSize: 13, color: '#6B6B7B', marginBottom: 20 }}>Free models work without keys. Add keys for Claude, GPT-4o, Gemini.</p>{['Anthropic (Claude)', 'OpenAI (GPT)', 'Google (Gemini)'].map(key => (<div key={key} style={{ display: 'flex', gap: 10, marginBottom: 12 }}><input type="password" placeholder={`${key} API key`} style={{ flex: 1, padding: '12px 14px', borderRadius: 10, background: '#050507', border: '1px solid rgba(255,255,255,0.08)', color: '#E8E8ED', fontSize: 13, outline: 'none', fontFamily: 'Inter, sans-serif' }} /><button style={{ padding: '10px 18px', borderRadius: 10, background: 'rgba(124,58,237,0.1)', border: '1px solid rgba(124,58,237,0.2)', color: '#A855F7', cursor: 'pointer', fontSize: 13, fontWeight: 600, fontFamily: 'Inter, sans-serif' }}>Save</button></div>))}</div></div>)}
+        {view === 'create' && (<div style={{ maxWidth: 560 }}><h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 4 }}>Create New Agent</h1><p style={{ color: '#71717A', fontSize: 13, marginBottom: 28 }}>Deploy your AI agent in 60 seconds</p><div style={{ background: '#0F0F12', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 16, padding: 28 }}><div style={{ marginBottom: 20 }}><label style={{ fontSize: 11, fontWeight: 600, color: '#71717A', letterSpacing: '0.06em', textTransform: 'uppercase', display: 'block', marginBottom: 6 }}>Agent Name</label><input type="text" value={agentName} onChange={e => setAgentName(e.target.value)} placeholder="My AI Assistant" style={{ width: '100%', padding: '12px 14px', borderRadius: 10, background: '#09090B', border: '1px solid rgba(255,255,255,0.08)', color: '#FAFAFA', fontSize: 14, outline: 'none', fontFamily: 'Inter, sans-serif', boxSizing: 'border-box' }} /></div><div style={{ marginBottom: 20 }}><label style={{ fontSize: 11, fontWeight: 600, color: '#71717A', letterSpacing: '0.06em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>Choose Model</label><div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6 }}>{MODELS.map(m => (<button key={m.id} onClick={() => setSelectedModel(m.id)} style={{ padding: '12px', borderRadius: 10, border: selectedModel === m.id ? '1px solid #7C3AED' : '1px solid rgba(255,255,255,0.05)', background: selectedModel === m.id ? 'rgba(124,58,237,0.06)' : 'transparent', cursor: 'pointer', textAlign: 'left', color: '#FAFAFA', fontFamily: 'Inter, sans-serif' }}><div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}><span style={{ fontSize: 13, fontWeight: 600 }}>{m.name}</span>{m.free && <span style={{ fontSize: 9, padding: '2px 6px', borderRadius: 4, background: 'rgba(34,197,94,0.08)', color: '#22C55E', fontWeight: 700 }}>FREE</span>}</div><div style={{ fontSize: 10, color: '#71717A', marginTop: 2 }}>{m.provider}</div></button>))}</div></div><div style={{ marginBottom: 24 }}><label style={{ fontSize: 11, fontWeight: 600, color: '#71717A', letterSpacing: '0.06em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>Connect Platforms</label><div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 6 }}>{PLATFORMS.map(p => (<button key={p.id} onClick={() => setSelectedPlatforms(prev => prev.includes(p.id) ? prev.filter(x => x !== p.id) : [...prev, p.id])} style={{ padding: '12px 6px', borderRadius: 10, border: selectedPlatforms.includes(p.id) ? '1px solid #7C3AED' : '1px solid rgba(255,255,255,0.05)', background: selectedPlatforms.includes(p.id) ? 'rgba(124,58,237,0.06)' : 'transparent', cursor: 'pointer', textAlign: 'center', color: '#FAFAFA', fontFamily: 'Inter, sans-serif' }}><div style={{ fontSize: 20 }}>{p.icon}</div><div style={{ fontSize: 10, fontWeight: 500, marginTop: 3 }}>{p.name}</div></button>))}</div></div><button onClick={createAgent} disabled={!agentName || deploying} style={{ width: '100%', padding: 14, background: (!agentName || deploying) ? '#1A1A24' : 'linear-gradient(135deg, #7C3AED, #A855F7)', color: 'white', border: 'none', borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: (!agentName || deploying) ? 'not-allowed' : 'pointer', fontFamily: 'Inter, sans-serif' }}>{deploying ? 'Provisioning...' : '⚡ Deploy Agent'}</button></div></div>)}
+        {view === 'models' && (<><h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 4 }}>AI Models</h1><p style={{ color: '#71717A', fontSize: 13, marginBottom: 28 }}>500+ models. Free ones need no API key.</p><div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>{MODELS.map(m => (<div key={m.id} style={{ background: '#0F0F12', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 14, padding: 20 }}><div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}><span style={{ fontWeight: 600, fontSize: 15 }}>{m.name}</span>{m.free ? <span style={{ fontSize: 10, padding: '3px 8px', borderRadius: 999, background: 'rgba(34,197,94,0.08)', color: '#22C55E', fontWeight: 700 }}>FREE</span> : <span style={{ fontSize: 10, padding: '3px 8px', borderRadius: 999, background: 'rgba(249,115,22,0.08)', color: '#F97316', fontWeight: 600 }}>BYOK</span>}</div><div style={{ fontSize: 12, color: '#71717A' }}>Provider: {m.provider}</div></div>))}</div></>)}
+        {view === 'settings' && (<div style={{ maxWidth: 500 }}><h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 4 }}>Settings</h1><p style={{ color: '#71717A', fontSize: 13, marginBottom: 28 }}>API keys and account</p><div style={{ background: '#0F0F12', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 16, padding: 24 }}><h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 12 }}>API Keys</h3><p style={{ fontSize: 12, color: '#71717A', marginBottom: 16 }}>Free models work without keys. Add keys for Claude, GPT-4o, Gemini.</p>{['Anthropic (Claude)', 'OpenAI (GPT)', 'Google (Gemini)'].map(key => (<div key={key} style={{ display: 'flex', gap: 8, marginBottom: 10 }}><input type="password" placeholder={`${key} API key`} style={{ flex: 1, padding: '10px 12px', borderRadius: 8, background: '#09090B', border: '1px solid rgba(255,255,255,0.06)', color: '#FAFAFA', fontSize: 12, outline: 'none', fontFamily: 'Inter, sans-serif' }} /><button style={{ padding: '8px 14px', borderRadius: 8, background: 'rgba(124,58,237,0.06)', border: '1px solid rgba(124,58,237,0.15)', color: '#A855F7', cursor: 'pointer', fontSize: 12, fontWeight: 600, fontFamily: 'Inter, sans-serif' }}>Save</button></div>))}</div></div>)}
       </div>
     </div>
   );
@@ -584,13 +493,7 @@ export default function Home() {
 
   useEffect(() => {
     const t = localStorage.getItem('token');
-    if (t) {
-      setToken(t);
-      fetch(`${API}/auth/me`, { headers: { Authorization: `Bearer ${t}` } })
-        .then(r => r.json())
-        .then(data => { if (data.user) { setUser(data.user); setPage('dashboard'); } })
-        .catch(() => localStorage.removeItem('token'));
-    }
+    if (t) { setToken(t); fetch(`${API}/auth/me`, { headers: { Authorization: `Bearer ${t}` } }).then(r => r.json()).then(data => { if (data.user) { setUser(data.user); setPage('dashboard'); } }).catch(() => localStorage.removeItem('token')); }
   }, []);
 
   const handleAuth = (u, t) => { setUser(u); setToken(t); setPage('dashboard'); };
